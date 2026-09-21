@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CryptoChat – Nachrichten in Bildern verstecken</title>
+<meta name="description" content="Verschlüssele Nachrichten und verstecke sie unsichtbar in Bildern – komplett offline, direkt im Browser." />
+<meta name="theme-color" content="#0f1220" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-512.png" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="lock-overlay" class="lock-overlay">
+  <div class="lock-card">
+    <h1>🔐 CryptoChat</h1>
+
+    <div id="lock-setup-view">
+      <p class="lock-text">Richte einen PIN ein, um die App auf diesem Gerät zu schützen.</p>
+      <input type="password" id="setup-pin" inputmode="numeric" autocomplete="new-password" placeholder="PIN (mind. 4 Zeichen)" />
+      <input type="password" id="setup-pin-confirm" inputmode="numeric" autocomplete="new-password" placeholder="PIN bestätigen" />
+      <button id="btn-setup-pin" type="button" class="btn-primary">PIN festlegen</button>
+      <p id="setup-error" class="error hidden"></p>
+      <p class="hint">Der PIN schützt nur den Zugriff auf die App auf diesem Gerät. Er hat nichts mit der Verschlüsselung deiner Nachrichten zu tun – die läuft weiterhin über dein eigenes Passwort pro Nachricht.</p>
+    </div>
+
+    <div id="lock-enter-view" class="hidden">
+      <p class="lock-text">App entsperren</p>
+      <input type="password" id="enter-pin" inputmode="numeric" autocomplete="current-password" placeholder="PIN" />
+      <button id="btn-unlock" type="button" class="btn-primary">Entsperren</button>
+      <p id="unlock-error" class="error hidden"></p>
+      <button id="btn-forgot-pin" type="button" class="btn-link">PIN vergessen? Zurücksetzen</button>
+    </div>
+  </div>
+</div>
+
+<div class="app hidden" id="app-root">
+  <header class="app-header">
+    <button id="btn-lock-now" type="button" class="btn-lock-now" title="App sperren">🔒</button>
+    <h1>🔐 CryptoChat</h1>
+    <p>Verschlüssele eine Nachricht und verstecke sie unsichtbar in einem Bild – oder hole sie wieder heraus.</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="hide">Verstecken</button>
+    <button class="tab-btn" data-tab="reveal">Extrahieren</button>
+  </nav>
+
+  <!-- HIDE TAB -->
+  <section id="tab-hide" class="tab-panel active">
+    <div class="card">
+      <label for="message">Geheime Nachricht</label>
+      <textarea id="message" rows="4" placeholder="Deine Nachricht..."></textarea>
+
+      <label for="password-hide">Passwort</label>
+      <input type="password" id="password-hide" placeholder="Ein starkes Passwort" autocomplete="new-password" />
+
+      <div class="source-choice">
+        <span class="source-label">Bildquelle</span>
+        <div class="radio-row">
+          <label class="radio-pill">
+            <input type="radio" name="source" value="upload" checked />
+            Bild hochladen
+          </label>
+          <label class="radio-pill">
+            <input type="radio" name="source" value="generate" />
+            Bild generieren
+          </label>
+          <label class="radio-pill">
+            <input type="radio" name="source" value="camera" />
+            Foto aufnehmen
+          </label>
+        </div>
+      </div>
+
+      <div id="upload-controls" class="source-controls">
+        <input type="file" id="image-upload" accept="image/*" />
+      </div>
+
+      <div id="camera-controls" class="source-controls hidden">
+        <video id="camera-video" autoplay playsinline muted></video>
+        <div class="camera-buttons">
+          <button type="button" id="btn-camera-start" class="btn-secondary">Kamera starten</button>
+          <button type="button" id="btn-camera-capture" class="btn-secondary hidden">📸 Foto aufnehmen</button>
+          <button type="button" id="btn-camera-retake" class="btn-secondary hidden">Neu aufnehmen</button>
+        </div>
+        <p id="camera-error" class="error hidden"></p>
+      </div>
+
+      <div id="generate-controls" class="source-controls hidden">
+        <label for="gen-style">Stil</label>
+        <select id="gen-style">
+          <option value="plasma">Plasma-Wellen</option>
+          <option value="noise">Farbrauschen</option>
+          <option value="circles">Kreise</option>
+          <option value="waves">Wellenlinien</option>
+          <option value="stars">Sternenhimmel</option>
+          <option value="grid">Gitter</option>
+          <option value="gradient">Farbverlauf</option>
+        </select>
+
+        <div class="color-row">
+          <label class="color-field">
+            Farbe 1
+            <input type="color" id="gen-color1" value="#7c5cff" />
+          </label>
+          <label class="color-field">
+            Farbe 2
+            <input type="color" id="gen-color2" value="#22d3aa" />
+          </label>
+          <button type="button" id="btn-reroll" class="btn-secondary btn-reroll" title="Neue Variante würfeln">🎲 Neu würfeln</button>
+        </div>
+      </div>
+
+      <div class="preview-row">
+        <canvas id="preview-canvas-hide"></canvas>
+        <div id="capacity-info" class="capacity-info"></div>
+      </div>
+
+      <button id="btn-hide" class="btn-primary">Verschlüsseln &amp; im Bild verstecken</button>
+
+      <div id="hide-result" class="result hidden">
+        <p class="success-msg">✅ Nachricht erfolgreich versteckt!</p>
+        <img id="result-image" alt="Ergebnisbild" />
+
+        <div class="recommended-box">
+          <a id="download-html-link" class="btn-primary btn-download-html" download="secret-entschluesseln.html">🔓 Empfohlen: Entschlüsselbare Datei herunterladen</a>
+          <p class="hint">Öffnet sich in jedem Browser und entschlüsselt sich selbst – übersteht auch JPEG-Konvertierung beim Versenden, da das Bild fest in der Datei eingebettet ist.</p>
+        </div>
+
+        <details class="advanced-details">
+          <summary>Alternative: reines PNG-Bild</summary>
+          <div class="result-actions">
+            <a id="download-link" class="btn-secondary" download="secret.png">Bild herunterladen (PNG)</a>
+            <button type="button" id="btn-share" class="btn-secondary">📤 Bild teilen</button>
+          </div>
+          <p id="share-status" class="hint hidden"></p>
+          <p class="hint">⚠️ Funktioniert nur, solange das Bild als PNG bleibt – wird es zu JPEG konvertiert (z. B. von manchen Messengern/Social-Media-Apps), ist die Nachricht zerstört.</p>
+        </details>
+      </div>
+      <div id="hide-error" class="error hidden"></div>
+    </div>
+  </section>
+
+  <!-- REVEAL TAB -->
+  <section id="tab-reveal" class="tab-panel">
+    <div class="card">
+      <label for="image-reveal">Bild mit versteckter Nachricht</label>
+      <input type="file" id="image-reveal" accept="image/*" />
+
+      <canvas id="preview-canvas-reveal"></canvas>
+
+      <label for="password-reveal">Passwort</label>
+      <input type="password" id="password-reveal" placeholder="Passwort zum Entschlüsseln" autocomplete="current-password" />
+
+      <button id="btn-reveal" class="btn-primary">Extrahieren &amp; entschlüsseln</button>
+
+      <div id="reveal-result" class="result hidden">
+        <p class="success-msg">✅ Nachricht gefunden:</p>
+        <pre id="revealed-message"></pre>
+      </div>
+      <div id="reveal-error" class="error hidden"></div>
+    </div>
+  </section>
+
+  <footer class="app-footer">
+    <p>AES-256-GCM · PBKDF2 (200.000 Iterationen) · LSB-Steganografie — alles läuft lokal im Browser, nichts wird hochgeladen.</p>
+    <p><a href="privacy.html">Datenschutzerklärung</a></p>
+  </footer>
+</div>
+
+<script src="crypto-stego.js"></script>
+<script src="lock.js"></script>
+<script src="app.js"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
