@@ -1,5 +1,9 @@
 /* UI-Logik: Tabs, Bildquellen, Vorschau, Verstecken/Extrahieren */
 
+// Link zur App für Empfänger, die CryptoChat noch nicht haben. Auf den
+// Play-Store-Eintrag umstellen, sobald der veröffentlicht ist.
+const APP_LINK = "https://lamine-abdouraman.github.io/cryptochat/";
+
 document.querySelectorAll(".tab-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
@@ -422,6 +426,8 @@ function SELF_DECRYPT_HTML_TEMPLATE(cryptoStegoSrc, imageDataUrl) {
   pre { white-space:pre-wrap; word-break:break-word; background:#10142450; border:1px solid #2a2f4a; border-radius:10px; padding:12px; width:100%; box-sizing:border-box; margin:0; font-family:inherit; }
   .error { color:#ff6b6b; margin:0; font-size:0.9rem; }
   .error.hidden, pre.hidden { display:none; }
+  .invite { margin-top:24px; padding-top:16px; border-top:1px solid #2a2f4a; text-align:center; max-width:420px; }
+  .invite a { color:#7c5cff; font-weight:600; text-decoration:none; }
 </style>
 </head>
 <body>
@@ -434,6 +440,7 @@ function SELF_DECRYPT_HTML_TEMPLATE(cryptoStegoSrc, imageDataUrl) {
     <pre id="out" class="hidden"></pre>
     <p class="error hidden" id="err"></p>
   </div>
+  <p class="invite hint">Noch keine CryptoChat-App? <a href="${APP_LINK}" target="_blank" rel="noopener">Hier bekommst du sie</a> – kostenlos, ohne Installation direkt im Browser nutzbar.</p>
 <script>
 ${cryptoStegoSrc}
 </script>
@@ -491,7 +498,10 @@ document.getElementById("btn-share").addEventListener("click", async () => {
       await navigator.share({
         files: [file],
         title: "CryptoChat-Bild",
-        text: "Verstecktes Bild aus CryptoChat (nur als PNG öffnen/weitergeben).",
+        text:
+          "Verstecktes Bild aus CryptoChat (nur als PNG öffnen/weitergeben). " +
+          "Zum Entschlüsseln brauchst du das Passwort und die App: " +
+          APP_LINK,
       });
       return;
     } catch (err) {
