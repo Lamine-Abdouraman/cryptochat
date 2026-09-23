@@ -1,0 +1,154 @@
+/* Senden an / Empfangen von anderen CryptoChat-Nutzern über Firestore.
+ * Firebase sieht nur das bereits verschlüsselte Bild, nie die Klartext-Nachricht
+ * oder das Passwort (das bleibt weiterhin außerhalb der App vereinbart). */
+
+const MAX_MESSAGE_DATA_URL_LENGTH = 700_000; // Sicherheitsabstand zum 1-MiB-Firestore-Limit
+
+const sendToUserBox = document.getElementById("send-to-user-box");
+const sendToUsernameInput = document.getElementById("send-to-username");
+const btnSendToUser = document.getElementById("btn-send-to-user");
+const sendToUserStatus = document.getElementById("send-to-user-status");
+
+document.addEventListener("cryptochat-auth-changed", (e) => {
+  sendToUserBox.classList.toggle("hidden", !e.detail);
+});
+
+btnSendToUser.addEventListener("click", async () => {
+  sendToUserStatus.classList.add("hidden");
+  if (!currentUser) return;
+  if (!currentResultBlob) return showSendStatus("⚠️ Bitte zuerst eine Nachricht verstecken.");
+
+  const usernameLower = usernameKey(sendToUsernameInput.value);
+  if (!usernameLower) return showSendStatus("⚠️ Bitte einen Nutzernamen eingeben.");
+
+  btnSendToUser.disabled = true;
+  try {
+    const usernameDoc = await db.collection("usernames").doc(usernameLower).get();
+    if (!usernameDoc.exists) {
+      return showSendStatus("⚠️ Diesen Nutzernamen gibt es nicht.");
+    }
+    const toUid = usernameDoc.data().uid;
+
+    const dataUrl = await blobToDataURL(currentResultBlob);
+    if (dataUrl.length > MAX_MESSAGE_DATA_URL_LENGTH) {
+      return showSendStatus(
+        "⚠️ Nachricht/Bild zu groß für den direkten Versand. Bitte PNG- oder HTML-Export nutzen."
+      );
+    }
+
+    await db.collection("messages").add({
+      to: toUid,
+      from: currentUser.uid,
+      fromUsername: currentUser.username,
+      imageData: dataUrl,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      read: false,
+    });
+
+    showSendStatus("✅ Gesendet an @" + sendToUsernameInput.value.trim());
+    sendToUsernameInput.value = "";
+  } catch (err) {
+    showSendStatus("⚠️ " + (err.message || String(err)));
+  } finally {
+    btnSendToUser.disabled = false;
+  }
+});
+
+function showSendStatus(msg) {
+  sendToUserStatus.textContent = msg;
+  sendToUserStatus.classList.remove("hidden");
+}
+
+// --- Posteingang ---
+
+const inboxListEl = document.getElementById("inbox-list");
+const inboxEmptyEl = document.getElementById("inbox-empty");
+const inboxSignedOutEl = document.getElementById("inbox-signed-out");
+let inboxUnsubscribe = null;
+
+document.addEventListener("cryptochat-auth-changed", (e) => {
+  if (inboxUnsubscribe) {
+    inboxUnsubscribe();
+    inboxUnsubscribe = null;
+  }
+  inboxListEl.innerHTML = "";
+
+  if (!e.detail) {
+    inboxSignedOutEl.classList.remove("hidden");
+    inboxEmptyEl.classList.add("hidden");
+    return;
+  }
+  inboxSignedOutEl.classList.add("hidden");
+
+  inboxUnsubscribe = db
+    .collection("messages")
+    .where("to", "==", e.detail.uid)
+    .orderBy("createdAt", "desc")
+    .onSnapshot(
+      (snapshot) => {
+        inboxListEl.innerHTML = "";
+        inboxEmptyEl.classList.toggle("hidden", !snapshot.empty);
+        snapshot.forEach((doc) => renderInboxMessage(doc.id, doc.data()));
+      },
+      (err) => {
+        inboxEmptyEl.classList.add("hidden");
+        inboxListEl.innerHTML = `<p class="error">⚠️ ${err.message || err}</p>`;
+      }
+    );
+});
+
+function renderInboxMessage(id, data) {
+  const item = document.createElement("div");
+  item.className = "inbox-item";
+
+  const when = data.createdAt && data.createdAt.toDate ? data.createdAt.toDate() : new Date();
+
+  item.innerHTML = `
+    <img src="${data.imageData}" alt="Verschlüsseltes Bild" class="inbox-thumb" />
+    <div class="inbox-meta">
+      <p class="inbox-from">@${escapeHtml(data.fromUsername)}</p>
+      <p class="inbox-date">${when.toLocaleString("de-DE")}</p>
+      <input type="password" placeholder="Passwort" class="inbox-password" />
+      <div class="inbox-actions">
+        <button type="button" class="btn-secondary inbox-decrypt">Entschlüsseln</button>
+        <button type="button" class="btn-link inbox-delete">Löschen</button>
+      </div>
+      <pre class="inbox-plaintext hidden"></pre>
+      <p class="error hidden inbox-error"></p>
+    </div>
+  `;
+
+  item.querySelector(".inbox-decrypt").addEventListener("click", async () => {
+    const errEl = item.querySelector(".inbox-error");
+    const outEl = item.querySelector(".inbox-plaintext");
+    errEl.classList.add("hidden");
+    const password = item.querySelector(".inbox-password").value;
+    try {
+      const img = item.querySelector(".inbox-thumb");
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext("2d").drawImage(img, 0, 0);
+      const imageData = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height);
+      const payload = extractPayload(imageData);
+      const message = await decryptPayload(password, payload);
+      outEl.textContent = message;
+      outEl.classList.remove("hidden");
+    } catch (err) {
+      errEl.textContent = "⚠️ Entschlüsselung fehlgeschlagen. Falsches Passwort?";
+      errEl.classList.remove("hidden");
+    }
+  });
+
+  item.querySelector(".inbox-delete").addEventListener("click", async () => {
+    await db.collection("messages").doc(id).delete();
+  });
+
+  inboxListEl.appendChild(item);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}

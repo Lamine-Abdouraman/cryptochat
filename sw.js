@@ -1,17 +1,22 @@
-const CACHE_NAME = "cryptostego-v2";
+const CACHE_NAME = "cryptostego-v4";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
-  "./lock.js",
   "./crypto-stego.js",
+  "./account.js",
+  "./inbox.js",
+  "./firebase-config.js",
   "./manifest.json",
   "./privacy.html",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",
 ];
+// Die Firebase-SDK-Skripte (CDN) werden bewusst NICHT vorab gecacht, damit ein
+// Fehler beim Erstinstall des Service Workers (z.B. offline) die Kern-App
+// (Verschlüsseln/Verstecken, komplett offline-fähig) nicht blockiert.
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

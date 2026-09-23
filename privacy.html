@@ -20,7 +20,7 @@
   <p>Stand: 20. September 2026</p>
 
   <h2>Kurzfassung</h2>
-  <p>CryptoChat verarbeitet alle Daten ausschließlich lokal auf deinem Gerät. Es gibt keinen Server, kein Konto, kein Tracking und keine Datenübertragung an Dritte. Nachrichten, Passwörter und Bilder verlassen dein Gerät zu keinem Zeitpunkt.</p>
+  <p>Alle Kernfunktionen von CryptoChat (Verschlüsseln, Verstecken, Extrahieren) laufen ausschließlich lokal auf deinem Gerät – kein Server, kein Tracking. Optional kannst du ein Konto anlegen, um Nachrichten direkt an andere CryptoChat-Nutzer zu schicken; dabei wird ein bereits verschlüsseltes Bild über den Dienst Google Firebase übermittelt (siehe unten). Nachrichtentext und Passwort verlassen dein Gerät dabei trotzdem nie.</p>
 
   <h2>Welche Daten werden verarbeitet?</h2>
   <ul>
@@ -29,8 +29,13 @@
     <li><strong>Kamerazugriff:</strong> wird nur verwendet, wenn du aktiv "Foto aufnehmen" wählst, um ein Trägerbild zu erstellen. Aufnahmen werden nicht gespeichert oder übertragen, außer du lädst das Ergebnis selbst herunter oder teilst es aktiv.</li>
   </ul>
 
-  <h2>Keine Server-Kommunikation</h2>
-  <p>Die App benötigt keine Internetverbindung, um zu funktionieren (nach dem ersten Laden). Es werden keine Analytics-, Tracking- oder Werbe-SDKs eingesetzt.</p>
+  <h2>Keine Server-Kommunikation (Kernfunktionen)</h2>
+  <p>Die Kernfunktionen benötigen keine Internetverbindung (nach dem ersten Laden). Es werden keine Analytics-, Tracking- oder Werbe-SDKs eingesetzt.</p>
+
+  <h2>Optionales Konto & "An Nutzer senden"</h2>
+  <p>Wenn du dich freiwillig registrierst, werden E-Mail-Adresse und selbstgewählter Nutzername beim Dienst <strong>Google Firebase</strong> (Google Ireland Ltd.) gespeichert, der als Auftragsverarbeiter für CryptoChat fungiert. Nutzt du die Funktion "An CryptoChat-Nutzer senden", wird das <strong>bereits verschlüsselte Bild</strong> (Ciphertext) über Firebase an das Konto des Empfängers übermittelt, bis dieser es abruft und wieder löscht.</p>
+  <p>Wichtig: Die Nachricht wird ausschließlich in bereits AES-256-verschlüsselter Form übertragen. Weder Firebase noch wir können den Klartext lesen – das zum Entschlüsseln nötige Passwort wird nicht mit übertragen und muss weiterhin auf anderem Weg (persönlich, Anruf, etc.) ausgetauscht werden. Ohne Konto und ohne Nutzung dieser Funktion werden keinerlei Daten an Firebase übertragen.</p>
+  <p>Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) bei der Registrierung. Du kannst dein Konto und deine Nachrichten jederzeit löschen (Kontakt siehe unten).</p>
 
   <h2>Teilen-Funktion</h2>
   <p>Wenn du die "Teilen"-Funktion nutzt, übergibst du das erzeugte Bild bzw. die HTML-Datei aktiv an eine App deiner Wahl (z. B. Messenger, E-Mail). Dieser Vorgang wird vom Betriebssystem gesteuert; CryptoChat selbst sendet nichts eigenständig.

@@ -12,39 +12,41 @@
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<div id="lock-overlay" class="lock-overlay">
-  <div class="lock-card">
-    <h1>🔐 CryptoChat</h1>
-
-    <div id="lock-setup-view">
-      <p class="lock-text">Richte einen PIN ein, um die App auf diesem Gerät zu schützen.</p>
-      <input type="password" id="setup-pin" inputmode="numeric" autocomplete="new-password" placeholder="PIN (mind. 4 Zeichen)" />
-      <input type="password" id="setup-pin-confirm" inputmode="numeric" autocomplete="new-password" placeholder="PIN bestätigen" />
-      <button id="btn-setup-pin" type="button" class="btn-primary">PIN festlegen</button>
-      <p id="setup-error" class="error hidden"></p>
-      <p class="hint">Der PIN schützt nur den Zugriff auf die App auf diesem Gerät. Er hat nichts mit der Verschlüsselung deiner Nachrichten zu tun – die läuft weiterhin über dein eigenes Passwort pro Nachricht.</p>
-    </div>
-
-    <div id="lock-enter-view" class="hidden">
-      <p class="lock-text">App entsperren</p>
-      <input type="password" id="enter-pin" inputmode="numeric" autocomplete="current-password" placeholder="PIN" />
-      <button id="btn-unlock" type="button" class="btn-primary">Entsperren</button>
-      <p id="unlock-error" class="error hidden"></p>
-      <button id="btn-forgot-pin" type="button" class="btn-link">PIN vergessen? Zurücksetzen</button>
-    </div>
-  </div>
-</div>
-
-<div class="app hidden" id="app-root">
+<div class="app" id="app-root">
   <header class="app-header">
-    <button id="btn-lock-now" type="button" class="btn-lock-now" title="App sperren">🔒</button>
     <h1>🔐 CryptoChat</h1>
     <p>Verschlüssele eine Nachricht und verstecke sie unsichtbar in einem Bild – oder hole sie wieder heraus.</p>
   </header>
 
+  <div id="account-box" class="card account-box">
+    <div id="account-signed-out">
+      <p class="account-hint">Optionales CryptoChat-Konto, um Nachrichten direkt an andere Nutzer zu schicken.</p>
+      <details class="account-details" open>
+        <summary>Anmelden</summary>
+        <input type="email" id="login-email" placeholder="E-Mail" autocomplete="email" />
+        <input type="password" id="login-password" placeholder="Passwort" autocomplete="current-password" />
+        <button type="button" id="btn-login" class="btn-secondary">Anmelden</button>
+        <button type="button" id="btn-forgot-password" class="btn-link">Passwort vergessen?</button>
+      </details>
+      <details class="account-details">
+        <summary>Registrieren</summary>
+        <input type="text" id="signup-username" placeholder="Nutzername" autocomplete="username" />
+        <input type="email" id="signup-email" placeholder="E-Mail" autocomplete="email" />
+        <input type="password" id="signup-password" placeholder="Passwort (mind. 6 Zeichen)" autocomplete="new-password" />
+        <button type="button" id="btn-signup" class="btn-secondary">Konto erstellen</button>
+      </details>
+      <p id="account-error" class="error hidden"></p>
+    </div>
+    <div id="account-signed-in" class="hidden">
+      <p>Angemeldet als <strong id="account-username-label"></strong></p>
+      <button type="button" id="btn-logout" class="btn-link">Abmelden</button>
+    </div>
+  </div>
+
   <nav class="tabs">
     <button class="tab-btn active" data-tab="hide">Verstecken</button>
     <button class="tab-btn" data-tab="reveal">Extrahieren</button>
+    <button class="tab-btn" data-tab="inbox">Posteingang</button>
   </nav>
 
   <!-- HIDE TAB -->
@@ -129,6 +131,15 @@
           <p class="hint">Öffnet sich in jedem Browser und entschlüsselt sich selbst – übersteht auch JPEG-Konvertierung beim Versenden, da das Bild fest in der Datei eingebettet ist.</p>
         </div>
 
+        <div id="send-to-user-box" class="send-to-user-box hidden">
+          <label for="send-to-username">📨 An CryptoChat-Nutzer senden</label>
+          <div class="send-to-user-row">
+            <input type="text" id="send-to-username" placeholder="Nutzername des Empfängers" autocomplete="off" />
+            <button type="button" id="btn-send-to-user" class="btn-secondary">Senden</button>
+          </div>
+          <p id="send-to-user-status" class="hint hidden"></p>
+        </div>
+
         <details class="advanced-details">
           <summary>Alternative: reines PNG-Bild</summary>
           <div class="result-actions">
@@ -164,15 +175,28 @@
     </div>
   </section>
 
+  <!-- INBOX TAB -->
+  <section id="tab-inbox" class="tab-panel">
+    <div class="card">
+      <p id="inbox-signed-out" class="hint">Bitte oben anmelden, um deinen Posteingang zu sehen.</p>
+      <p id="inbox-empty" class="hint hidden">Noch keine Nachrichten erhalten.</p>
+      <div id="inbox-list"></div>
+    </div>
+  </section>
+
   <footer class="app-footer">
     <p>AES-256-GCM · PBKDF2 (200.000 Iterationen) · LSB-Steganografie — alles läuft lokal im Browser, nichts wird hochgeladen.</p>
     <p><a href="privacy.html">Datenschutzerklärung</a></p>
   </footer>
 </div>
 
-<script src="crypto-stego.js"></script>
-<script src="lock.js"></script>
-<script src="app.js"></script>
+<script src="crypto-stego.js"></script><script src="app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="account.js"></script>
+<script src="inbox.js"></script>
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {

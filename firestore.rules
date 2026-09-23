@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Nutzername -> UID Zuordnung. Öffentlich lesbar (kein Login nötig), damit
+    // die Verfügbarkeitsprüfung beim Sign-up funktioniert, bevor ein Konto
+    // existiert, und damit man beim Senden einen Nutzernamen zu einer UID
+    // auflösen kann. Enthält keine sensiblen Daten (nur den Nutzernamen selbst
+    // und die zugehörige UID). Erstellbar nur einmal, nur für die eigene UID.
+    match /usernames/{username} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Profil eines Nutzers. Nur der Owner darf schreiben, alle Angemeldeten
+    // dürfen lesen (z.B. um den Absendernamen anzuzeigen).
+    match /users/{uid} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && request.auth.uid == uid;
+      allow delete: if false;
+    }
+
+    // Verschlüsselte Nachrichten. Erstellbar nur im eigenen Namen (from == eigene UID).
+    // Lesbar/löschbar nur von Absender oder Empfänger. Kein Update (unveränderlich).
+    match /messages/{messageId} {
+      allow create: if request.auth != null
+                    && request.resource.data.from == request.auth.uid;
+      allow read, delete: if request.auth != null
+                    && (request.auth.uid == resource.data.to
+                        || request.auth.uid == resource.data.from);
+      allow update: if false;
+    }
+  }
+}
