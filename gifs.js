@@ -1,4 +1,4 @@
-/* GIF-Bildquelle über die Tenor-API. Ausgewähltes GIF wird als Standbild
+/* GIF-Bildquelle über die GIPHY-API. Ausgewähltes GIF wird als Standbild
  * (erster Frame) auf ein Canvas gezeichnet und wie jedes andere Trägerbild
  * behandelt (siehe selectedGifCanvas in app.js). */
 
@@ -18,14 +18,14 @@ function clearGifError() {
 
 async function searchGifs(query) {
   const url =
-    "https://tenor.googleapis.com/v2/search" +
-    `?q=${encodeURIComponent(query)}&key=${TENOR_API_KEY}&client_key=cryptochat&limit=24&media_filter=gif&contentfilter=medium`;
+    "https://api.giphy.com/v1/gifs/search" +
+    `?q=${encodeURIComponent(query)}&api_key=${GIPHY_API_KEY}&limit=24&rating=g`;
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error("GIF-Suche fehlgeschlagen (" + response.status + ").");
   }
   const data = await response.json();
-  return data.results || [];
+  return data.data || [];
 }
 
 btnGifSearch.addEventListener("click", async () => {
@@ -41,13 +41,13 @@ btnGifSearch.addEventListener("click", async () => {
       return showGifError("Keine GIFs gefunden.");
     }
     for (const result of results) {
-      const preview = result.media_formats?.tinygif?.url || result.media_formats?.gif?.url;
-      const full = result.media_formats?.gif?.url || preview;
+      const preview = result.images?.fixed_width_small?.url || result.images?.original?.url;
+      const full = result.images?.original?.url || preview;
       if (!preview || !full) continue;
 
       const thumb = document.createElement("img");
       thumb.src = preview;
-      thumb.alt = result.content_description || "GIF";
+      thumb.alt = result.title || "GIF";
       thumb.className = "gif-thumb";
       thumb.addEventListener("click", () => selectGif(full, thumb));
       gifResultsEl.appendChild(thumb);
