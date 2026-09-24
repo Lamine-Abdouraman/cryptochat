@@ -57,6 +57,27 @@ document.addEventListener("cryptochat-auth-changed", (e) => {
     );
 });
 
+/** Fügt einen Nutzer (bereits bekannte UID/Name/Avatar) der eigenen Freundesliste
+ * hinzu. Wiederverwendet von der Freunde-Seite und vom "Freund hinzufügen"-Button
+ * im Posteingang. */
+async function addFriendByUid(friendUid, username, avatar) {
+  if (!currentUser) return { ok: false, msg: "Bitte zuerst anmelden." };
+  if (friendUid === currentUser.uid) return { ok: false, msg: "Das bist du selbst." };
+
+  await db
+    .collection("users")
+    .doc(currentUser.uid)
+    .collection("friends")
+    .doc(friendUid)
+    .set({
+      username,
+      avatar: avatar || null,
+      addedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+
+  return { ok: true, msg: "✅ @" + username + " zu Freunden hinzugefügt." };
+}
+
 btnAddFriend.addEventListener("click", async () => {
   friendsErrorEl.classList.add("hidden");
   if (!currentUser) return;
@@ -71,23 +92,13 @@ btnAddFriend.addEventListener("click", async () => {
       return showFriendsError("Diesen Nutzernamen gibt es nicht.");
     }
     const friendUid = usernameDoc.data().uid;
-    if (friendUid === currentUser.uid) {
-      return showFriendsError("Das bist du selbst.");
-    }
 
     const friendProfile = await db.collection("users").doc(friendUid).get();
     const friendData = friendProfile.exists ? friendProfile.data() : {};
+    const username = friendData.username || addFriendInput.value.trim();
 
-    await db
-      .collection("users")
-      .doc(currentUser.uid)
-      .collection("friends")
-      .doc(friendUid)
-      .set({
-        username: friendData.username || addFriendInput.value.trim(),
-        avatar: friendData.avatar || null,
-        addedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      });
+    const result = await addFriendByUid(friendUid, username, friendData.avatar);
+    if (!result.ok) return showFriendsError(result.msg);
 
     addFriendInput.value = "";
   } catch (err) {

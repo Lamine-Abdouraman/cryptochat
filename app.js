@@ -30,10 +30,15 @@ const previewCanvasHide = document.getElementById("preview-canvas-hide");
 const capacityInfoEl = document.getElementById("capacity-info");
 const messageEl = document.getElementById("message");
 
-let uploadedImage = null; // HTMLImageElement für den Hide-Tab
+let uploadedImage = null; // Canvas mit hochgeladenem/skaliertem Bild
 let capturedPhotoCanvas = null; // Canvas mit aufgenommenem Kamerafoto
 let selectedGifCanvas = null; // Canvas mit ausgewähltem GIF-Frame
 let cameraStream = null;
+
+// Bilder werden auf diese maximale Kantenlänge herunterskaliert – hält die
+// PNG-Dateigröße klein genug für den Versand (Firestore-Limit) und reicht
+// für die Bildkapazität locker aus.
+const MAX_CARRIER_DIMENSION = 400;
 
 function drawImageToCanvas(canvas, img) {
   canvas.width = img.naturalWidth || img.width;
@@ -42,12 +47,27 @@ function drawImageToCanvas(canvas, img) {
   ctx.drawImage(img, 0, 0);
 }
 
+/** Skaliert ein Canvas herunter, falls es maxDim in Breite/Höhe überschreitet. */
+function resizeCanvasToMax(canvas, maxDim) {
+  if (canvas.width <= maxDim && canvas.height <= maxDim) return canvas;
+  const scale = maxDim / Math.max(canvas.width, canvas.height);
+  const resized = document.createElement("canvas");
+  resized.width = Math.max(1, Math.round(canvas.width * scale));
+  resized.height = Math.max(1, Math.round(canvas.height * scale));
+  resized.getContext("2d").drawImage(canvas, 0, 0, resized.width, resized.height);
+  return resized;
+}
+
 document.getElementById("image-upload").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
   const img = await loadImageFromFile(file);
-  uploadedImage = img;
-  drawImageToCanvas(previewCanvasHide, img);
+  const fullCanvas = document.createElement("canvas");
+  drawImageToCanvas(fullCanvas, img);
+  uploadedImage = resizeCanvasToMax(fullCanvas, MAX_CARRIER_DIMENSION);
+  previewCanvasHide.width = uploadedImage.width;
+  previewCanvasHide.height = uploadedImage.height;
+  previewCanvasHide.getContext("2d").drawImage(uploadedImage, 0, 0);
   refreshPreview();
 });
 
@@ -89,15 +109,15 @@ function stopCamera() {
 }
 
 function capturePhoto() {
-  const canvas = document.createElement("canvas");
-  canvas.width = cameraVideo.videoWidth;
-  canvas.height = cameraVideo.videoHeight;
-  canvas.getContext("2d").drawImage(cameraVideo, 0, 0);
-  capturedPhotoCanvas = canvas;
+  const fullCanvas = document.createElement("canvas");
+  fullCanvas.width = cameraVideo.videoWidth;
+  fullCanvas.height = cameraVideo.videoHeight;
+  fullCanvas.getContext("2d").drawImage(cameraVideo, 0, 0);
+  capturedPhotoCanvas = resizeCanvasToMax(fullCanvas, MAX_CARRIER_DIMENSION);
 
-  previewCanvasHide.width = canvas.width;
-  previewCanvasHide.height = canvas.height;
-  previewCanvasHide.getContext("2d").drawImage(canvas, 0, 0);
+  previewCanvasHide.width = capturedPhotoCanvas.width;
+  previewCanvasHide.height = capturedPhotoCanvas.height;
+  previewCanvasHide.getContext("2d").drawImage(capturedPhotoCanvas, 0, 0);
 
   if (cameraStream) {
     cameraStream.getTracks().forEach((track) => track.stop());
@@ -174,7 +194,8 @@ function refreshPreview() {
 
 const hideErrorEl = document.getElementById("hide-error");
 const hideResultEl = document.getElementById("hide-result");
-let currentResultBlob = null; // vom "An CryptoChat-Nutzer senden"-Flow in inbox.js verwendet
+const hideSuccessMsgEl = document.getElementById("hide-success-msg");
+const btnHideEl = document.getElementById("btn-hide");
 
 document.getElementById("btn-hide").addEventListener("click", async () => {
   hideErrorEl.classList.add("hidden");
@@ -183,10 +204,14 @@ document.getElementById("btn-hide").addEventListener("click", async () => {
   const message = messageEl.value;
   const password = document.getElementById("password-hide").value;
   const source = document.querySelector('input[name="source"]:checked').value;
+  const recipient = document.getElementById("send-to-username").value;
 
+  if (!currentUser) return showHideError("Bitte zuerst anmelden, um eine Nachricht zu senden.");
   if (!message.trim()) return showHideError("Bitte eine Nachricht eingeben.");
   if (!password) return showHideError("Bitte ein Passwort eingeben.");
+  if (!recipient.trim()) return showHideError("Bitte einen Empfänger-Nutzernamen eingeben.");
 
+  btnHideEl.disabled = true;
   let workCanvas;
   try {
     if (source === "upload") {
@@ -217,11 +242,19 @@ document.getElementById("btn-hide").addEventListener("click", async () => {
     const blob = await new Promise((resolve) => workCanvas.toBlob(resolve, "image/png"));
     const url = URL.createObjectURL(blob);
 
-    currentResultBlob = blob;
+    const sendResult = await sendImageTo(blob, recipient);
+    if (!sendResult.ok) {
+      return showHideError(sendResult.msg);
+    }
+
     document.getElementById("result-image").src = url;
+    hideSuccessMsgEl.textContent = sendResult.msg;
     hideResultEl.classList.remove("hidden");
+    document.getElementById("send-to-username").value = "";
   } catch (err) {
     showHideError(err.message || String(err));
+  } finally {
+    btnHideEl.disabled = false;
   }
 });
 

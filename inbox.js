@@ -6,8 +6,6 @@ const MAX_MESSAGE_DATA_URL_LENGTH = 700_000; // Sicherheitsabstand zum 1-MiB-Fir
 
 const sendToUserBox = document.getElementById("send-to-user-box");
 const sendToUsernameInput = document.getElementById("send-to-username");
-const btnSendToUser = document.getElementById("btn-send-to-user");
-const sendToUserStatus = document.getElementById("send-to-user-status");
 const sendSignedOutHint = document.getElementById("send-signed-out-hint");
 
 document.addEventListener("cryptochat-auth-changed", (e) => {
@@ -15,51 +13,36 @@ document.addEventListener("cryptochat-auth-changed", (e) => {
   sendSignedOutHint.classList.toggle("hidden", !!e.detail);
 });
 
-btnSendToUser.addEventListener("click", async () => {
-  sendToUserStatus.classList.add("hidden");
-  if (!currentUser) return;
-  if (!currentResultBlob) return showSendStatus("⚠️ Bitte zuerst eine Nachricht verstecken.");
+/** Verschlüsseltes Bild an einen Nutzernamen senden. Von app.js beim Klick
+ * auf "Verschlüsseln & senden" aufgerufen (ein Klick statt zwei Schritte). */
+async function sendImageTo(blob, usernameRaw) {
+  if (!currentUser) return { ok: false, msg: "Bitte zuerst anmelden." };
 
-  const usernameLower = usernameKey(sendToUsernameInput.value);
-  if (!usernameLower) return showSendStatus("⚠️ Bitte einen Nutzernamen eingeben.");
+  const usernameLower = usernameKey(usernameRaw);
+  if (!usernameLower) return { ok: false, msg: "Bitte einen Empfänger-Nutzernamen eingeben." };
 
-  btnSendToUser.disabled = true;
-  try {
-    const usernameDoc = await db.collection("usernames").doc(usernameLower).get();
-    if (!usernameDoc.exists) {
-      return showSendStatus("⚠️ Diesen Nutzernamen gibt es nicht.");
-    }
-    const toUid = usernameDoc.data().uid;
-
-    const dataUrl = await blobToDataURL(currentResultBlob);
-    if (dataUrl.length > MAX_MESSAGE_DATA_URL_LENGTH) {
-      return showSendStatus(
-        "⚠️ Nachricht/Bild zu groß für den direkten Versand. Bitte PNG- oder HTML-Export nutzen."
-      );
-    }
-
-    await db.collection("messages").add({
-      to: toUid,
-      from: currentUser.uid,
-      fromUsername: currentUser.username,
-      fromAvatar: currentUser.avatar || null,
-      imageData: dataUrl,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      read: false,
-    });
-
-    showSendStatus("✅ Gesendet an @" + sendToUsernameInput.value.trim());
-    sendToUsernameInput.value = "";
-  } catch (err) {
-    showSendStatus("⚠️ " + (err.message || String(err)));
-  } finally {
-    btnSendToUser.disabled = false;
+  const usernameDoc = await db.collection("usernames").doc(usernameLower).get();
+  if (!usernameDoc.exists) {
+    return { ok: false, msg: "Diesen Nutzernamen gibt es nicht." };
   }
-});
+  const toUid = usernameDoc.data().uid;
 
-function showSendStatus(msg) {
-  sendToUserStatus.textContent = msg;
-  sendToUserStatus.classList.remove("hidden");
+  const dataUrl = await blobToDataURL(blob);
+  if (dataUrl.length > MAX_MESSAGE_DATA_URL_LENGTH) {
+    return { ok: false, msg: "Bild zu groß für den Versand. Bitte ein anderes/kleineres Bild wählen." };
+  }
+
+  await db.collection("messages").add({
+    to: toUid,
+    from: currentUser.uid,
+    fromUsername: currentUser.username,
+    fromAvatar: currentUser.avatar || null,
+    imageData: dataUrl,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    read: false,
+  });
+
+  return { ok: true, msg: "✅ Gesendet an @" + usernameRaw.trim() };
 }
 
 // --- Posteingang ---
@@ -114,12 +97,20 @@ function renderInboxMessage(id, data) {
       <input type="password" placeholder="Passwort" class="inbox-password" />
       <div class="inbox-actions">
         <button type="button" class="btn-secondary inbox-decrypt">Entschlüsseln</button>
+        <button type="button" class="btn-link inbox-add-friend">➕ Freund hinzufügen</button>
         <button type="button" class="btn-link inbox-delete">Löschen</button>
       </div>
       <pre class="inbox-plaintext hidden"></pre>
       <p class="error hidden inbox-error"></p>
     </div>
   `;
+
+  item.querySelector(".inbox-add-friend").addEventListener("click", async (e) => {
+    const btn = e.currentTarget;
+    btn.disabled = true;
+    const result = await addFriendByUid(data.from, data.fromUsername, data.fromAvatar);
+    btn.textContent = result.ok ? "✅ Hinzugefügt" : "⚠️ " + result.msg;
+  });
 
   item.querySelector(".inbox-decrypt").addEventListener("click", async () => {
     const errEl = item.querySelector(".inbox-error");

@@ -80,10 +80,10 @@ async function selectGif(gifUrl, thumbEl) {
     // Canvas-Zugriff testen (schlägt fehl, falls die Quelle kein CORS erlaubt).
     canvas.getContext("2d").getImageData(0, 0, 1, 1);
 
-    selectedGifCanvas = canvas;
-    previewCanvasHide.width = canvas.width;
-    previewCanvasHide.height = canvas.height;
-    previewCanvasHide.getContext("2d").drawImage(canvas, 0, 0);
+    selectedGifCanvas = resizeCanvasToMax(canvas, MAX_CARRIER_DIMENSION);
+    previewCanvasHide.width = selectedGifCanvas.width;
+    previewCanvasHide.height = selectedGifCanvas.height;
+    previewCanvasHide.getContext("2d").drawImage(selectedGifCanvas, 0, 0);
     refreshPreview();
   } catch (err) {
     selectedGifCanvas = null;

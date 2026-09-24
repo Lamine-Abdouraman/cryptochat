@@ -367,6 +367,16 @@ canvas {
   color: var(--text);
 }
 
+.send-to-user-box input {
+  width: 100%;
+  background: #10142450;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 11px;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
 .send-to-user-row {
   display: flex;
   gap: 8px;

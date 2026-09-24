@@ -1,4 +1,4 @@
-const CACHE_NAME = "cryptostego-v12";
+const CACHE_NAME = "cryptostego-v13";
 const APP_SHELL = [
   "./",
   "./index.html",

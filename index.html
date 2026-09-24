@@ -64,6 +64,13 @@
       <label for="password-hide">Passwort</label>
       <input type="password" id="password-hide" placeholder="Ein starkes Passwort" autocomplete="new-password" />
 
+      <div id="send-to-user-box" class="send-to-user-box hidden">
+        <label for="send-to-username">📨 Senden an (Nutzername)</label>
+        <div id="send-friend-chips" class="friend-chips hidden"></div>
+        <input type="text" id="send-to-username" placeholder="Nutzername des Empfängers" autocomplete="off" />
+      </div>
+      <p id="send-signed-out-hint" class="hint">Bitte oben anmelden, um Nachrichten senden zu können.</p>
+
       <div class="source-choice">
         <span class="source-label">Bildquelle</span>
         <div class="radio-row">
@@ -110,22 +117,11 @@
         <div id="capacity-info" class="capacity-info"></div>
       </div>
 
-      <button id="btn-hide" class="btn-primary">Verschlüsseln &amp; im Bild verstecken</button>
+      <button id="btn-hide" class="btn-primary">🔒📨 Verschlüsseln &amp; senden</button>
 
       <div id="hide-result" class="result hidden">
-        <p class="success-msg">✅ Nachricht erfolgreich versteckt!</p>
+        <p class="success-msg" id="hide-success-msg">✅ Gesendet!</p>
         <img id="result-image" alt="Ergebnisbild" />
-
-        <div id="send-to-user-box" class="send-to-user-box hidden">
-          <label for="send-to-username">📨 An CryptoChat-Nutzer senden</label>
-          <div id="send-friend-chips" class="friend-chips hidden"></div>
-          <div class="send-to-user-row">
-            <input type="text" id="send-to-username" placeholder="Nutzername des Empfängers" autocomplete="off" />
-            <button type="button" id="btn-send-to-user" class="btn-secondary">Senden</button>
-          </div>
-          <p id="send-to-user-status" class="hint hidden"></p>
-        </div>
-        <p id="send-signed-out-hint" class="hint">Bitte oben anmelden, um die Nachricht an einen CryptoChat-Nutzer zu senden – das ist der einzige Versandweg.</p>
       </div>
       <div id="hide-error" class="error hidden"></div>
     </div>
