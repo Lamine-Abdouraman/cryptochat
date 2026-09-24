@@ -13,6 +13,11 @@
 
 * { box-sizing: border-box; }
 
+/* Generischer Fallback, damit .hidden immer wirkt, auch ohne
+   elementspezifische Regel (siehe die spezifischeren .hidden-Regeln unten,
+   die bei Bedarf ein anderes display als "none" erzwingen können). */
+.hidden { display: none; }
+
 body {
   margin: 0;
   font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
