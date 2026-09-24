@@ -429,7 +429,15 @@ canvas {
   min-width: 0;
 }
 
-.inbox-from { margin: 0; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.inbox-from { margin: 0; font-weight: 600; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+.inbox-add-friend {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 2px 4px;
+}
+
+.inbox-add-friend.hidden { display: none; }
 .inbox-date { margin: 0; font-size: 0.78rem; color: var(--text-dim); }
 
 .inbox-password {

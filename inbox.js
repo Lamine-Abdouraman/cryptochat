@@ -92,12 +92,14 @@ function renderInboxMessage(id, data) {
   item.innerHTML = `
     <img src="${data.imageData}" alt="Verschlüsseltes Bild" class="inbox-thumb" />
     <div class="inbox-meta">
-      <p class="inbox-from">${avatarHtml(data.fromAvatar, data.fromUsername, "avatar-sm")} @${escapeHtml(data.fromUsername)}</p>
+      <p class="inbox-from">
+        ${avatarHtml(data.fromAvatar, data.fromUsername, "avatar-sm")} @${escapeHtml(data.fromUsername)}
+        <button type="button" class="btn-link inbox-add-friend hidden">➕ Freund hinzufügen</button>
+      </p>
       <p class="inbox-date">${when.toLocaleString("de-DE")}</p>
       <input type="password" placeholder="Passwort" class="inbox-password" />
       <div class="inbox-actions">
         <button type="button" class="btn-secondary inbox-decrypt">Entschlüsseln</button>
-        <button type="button" class="btn-link inbox-add-friend">➕ Freund hinzufügen</button>
         <button type="button" class="btn-link inbox-delete">Löschen</button>
       </div>
       <pre class="inbox-plaintext hidden"></pre>
@@ -105,11 +107,25 @@ function renderInboxMessage(id, data) {
     </div>
   `;
 
-  item.querySelector(".inbox-add-friend").addEventListener("click", async (e) => {
-    const btn = e.currentTarget;
-    btn.disabled = true;
+  const addFriendBtn = item.querySelector(".inbox-add-friend");
+  db.collection("users")
+    .doc(currentUser.uid)
+    .collection("friends")
+    .doc(data.from)
+    .get()
+    .then((doc) => {
+      if (!doc.exists) addFriendBtn.classList.remove("hidden");
+    });
+
+  addFriendBtn.addEventListener("click", async () => {
+    addFriendBtn.disabled = true;
     const result = await addFriendByUid(data.from, data.fromUsername, data.fromAvatar);
-    btn.textContent = result.ok ? "✅ Hinzugefügt" : "⚠️ " + result.msg;
+    if (result.ok) {
+      addFriendBtn.remove();
+    } else {
+      addFriendBtn.disabled = false;
+      showInboxItemError(item, result.msg);
+    }
   });
 
   item.querySelector(".inbox-decrypt").addEventListener("click", async () => {
@@ -139,6 +155,12 @@ function renderInboxMessage(id, data) {
   });
 
   inboxListEl.appendChild(item);
+}
+
+function showInboxItemError(item, msg) {
+  const errEl = item.querySelector(".inbox-error");
+  errEl.textContent = "⚠️ " + msg;
+  errEl.classList.remove("hidden");
 }
 
 function escapeHtml(str) {
