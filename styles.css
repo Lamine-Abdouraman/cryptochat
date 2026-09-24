@@ -38,6 +38,14 @@ body {
   margin-bottom: 24px;
 }
 
+.app-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 20px #7c5cff40;
+}
+
 .app-header h1 {
   font-size: 1.8rem;
   margin: 0 0 6px;
