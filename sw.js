@@ -1,4 +1,4 @@
-const CACHE_NAME = "cryptostego-v4";
+const CACHE_NAME = "cryptostego-v5";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -33,10 +33,18 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// Cache-first für die App-Shell, damit die App auch offline startet.
+// Network-first: bei bestehender Verbindung immer die aktuellste Version laden
+// (verhindert, dass alte Versionen der App dauerhaft aus dem Cache hängen
+// bleiben), mit Cache-Fallback für Offline-Nutzung.
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    fetch(event.request)
+      .then((response) => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
