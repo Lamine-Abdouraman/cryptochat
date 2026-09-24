@@ -129,3 +129,39 @@ function renderFriendChip(data) {
   });
   sendFriendChipsEl.appendChild(chip);
 }
+
+// --- Freunde einladen ---
+
+const APP_LINK = "https://lamine-abdouraman.github.io/cryptochat/";
+const btnInviteFriends = document.getElementById("btn-invite-friends");
+const inviteFriendsStatus = document.getElementById("invite-friends-status");
+
+function showInviteStatus(msg) {
+  inviteFriendsStatus.textContent = msg;
+  inviteFriendsStatus.classList.remove("hidden");
+}
+
+btnInviteFriends.addEventListener("click", async () => {
+  inviteFriendsStatus.classList.add("hidden");
+  const inviteText =
+    "Lass uns über CryptoChat verschlüsselte Nachrichten austauschen! " +
+    "Hol dir die App hier: " +
+    APP_LINK;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: "CryptoChat", text: inviteText, url: APP_LINK });
+      return;
+    } catch (err) {
+      if (err.name === "AbortError") return; // Nutzer hat den Teilen-Dialog abgebrochen
+      // sonst weiter zum Zwischenablage-Fallback
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(inviteText);
+    showInviteStatus("✅ Einladungstext in die Zwischenablage kopiert – jetzt irgendwo einfügen.");
+  } catch {
+    showInviteStatus("⚠️ Teilen wird hier nicht unterstützt. Link zum Kopieren: " + APP_LINK);
+  }
+});
