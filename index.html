@@ -15,7 +15,7 @@
 <div class="app" id="app-root">
   <header class="app-header">
     <h1>🔐 CryptoChat</h1>
-    <p>Verschlüssele eine Nachricht und verstecke sie unsichtbar in einem Bild – oder hole sie wieder heraus.</p>
+    <p>Verschlüssele eine Nachricht, verstecke sie unsichtbar in einem Bild und schicke sie an einen anderen CryptoChat-Nutzer.</p>
   </header>
 
   <div id="account-box" class="card account-box">
@@ -50,7 +50,6 @@
 
   <nav class="tabs">
     <button class="tab-btn active" data-tab="hide">Verstecken</button>
-    <button class="tab-btn" data-tab="reveal">Extrahieren</button>
     <button class="tab-btn" data-tab="inbox">Posteingang</button>
     <button class="tab-btn" data-tab="friends">Freunde</button>
   </nav>
@@ -128,27 +127,6 @@
         <p id="send-signed-out-hint" class="hint">Bitte oben anmelden, um die Nachricht an einen CryptoChat-Nutzer zu senden – das ist der einzige Versandweg.</p>
       </div>
       <div id="hide-error" class="error hidden"></div>
-    </div>
-  </section>
-
-  <!-- REVEAL TAB -->
-  <section id="tab-reveal" class="tab-panel">
-    <div class="card">
-      <label for="image-reveal">Bild mit versteckter Nachricht</label>
-      <input type="file" id="image-reveal" accept="image/*" />
-
-      <canvas id="preview-canvas-reveal"></canvas>
-
-      <label for="password-reveal">Passwort</label>
-      <input type="password" id="password-reveal" placeholder="Passwort zum Entschlüsseln" autocomplete="current-password" />
-
-      <button id="btn-reveal" class="btn-primary">Extrahieren &amp; entschlüsseln</button>
-
-      <div id="reveal-result" class="result hidden">
-        <p class="success-msg">✅ Nachricht gefunden:</p>
-        <pre id="revealed-message"></pre>
-      </div>
-      <div id="reveal-error" class="error hidden"></div>
     </div>
   </section>
 

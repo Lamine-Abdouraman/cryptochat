@@ -239,43 +239,4 @@ function showHideError(msg) {
   hideErrorEl.classList.remove("hidden");
 }
 
-// --- Reveal Tab ---
-
-const previewCanvasReveal = document.getElementById("preview-canvas-reveal");
-const revealErrorEl = document.getElementById("reveal-error");
-const revealResultEl = document.getElementById("reveal-result");
-let revealImage = null;
-
-document.getElementById("image-reveal").addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  revealImage = await loadImageFromFile(file);
-  drawImageToCanvas(previewCanvasReveal, revealImage);
-});
-
-document.getElementById("btn-reveal").addEventListener("click", async () => {
-  revealErrorEl.classList.add("hidden");
-  revealResultEl.classList.add("hidden");
-
-  const password = document.getElementById("password-reveal").value;
-  if (!revealImage) return showRevealError("Bitte zuerst ein Bild auswählen.");
-  if (!password) return showRevealError("Bitte das Passwort eingeben.");
-
-  try {
-    const ctx = previewCanvasReveal.getContext("2d");
-    const imageData = ctx.getImageData(0, 0, previewCanvasReveal.width, previewCanvasReveal.height);
-    const payload = extractPayload(imageData);
-    const message = await decryptPayload(password, payload);
-    document.getElementById("revealed-message").textContent = message;
-    revealResultEl.classList.remove("hidden");
-  } catch (err) {
-    showRevealError("Entschlüsselung fehlgeschlagen. Falsches Passwort oder kein verstecktes Bild.");
-  }
-});
-
-function showRevealError(msg) {
-  revealErrorEl.textContent = "⚠️ " + msg;
-  revealErrorEl.classList.remove("hidden");
-}
-
 refreshPreview();

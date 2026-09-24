@@ -197,7 +197,7 @@ canvas {
   background: #0a0c18;
 }
 
-#preview-canvas-hide:not([width]), #preview-canvas-reveal:not([width]) {
+#preview-canvas-hide:not([width]) {
   display: none;
 }
 
@@ -256,18 +256,6 @@ canvas {
 
 .hint { color: var(--text-dim); font-size: 0.8rem; text-align: center; margin: 0; }
 .hint.hidden { display: none; }
-
-#revealed-message {
-  white-space: pre-wrap;
-  word-break: break-word;
-  background: #10142450;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px;
-  width: 100%;
-  font-family: inherit;
-  margin: 0;
-}
 
 .error {
   color: var(--danger);
