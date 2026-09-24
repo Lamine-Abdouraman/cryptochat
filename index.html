@@ -86,11 +86,24 @@
             <input type="radio" name="source" value="gif" />
             GIF suchen
           </label>
+          <label class="radio-pill">
+            <input type="radio" name="source" value="stock" />
+            Foto suchen
+          </label>
         </div>
       </div>
 
       <div id="upload-controls" class="source-controls">
         <input type="file" id="image-upload" accept="image/*" />
+      </div>
+
+      <div id="stock-controls" class="source-controls hidden">
+        <div class="gif-search-row">
+          <input type="text" id="stock-search-input" placeholder="Foto suchen (z.B. Berge, Katze...)" />
+          <button type="button" id="btn-stock-search" class="btn-secondary">Suchen</button>
+        </div>
+        <div id="stock-results" class="gif-results"></div>
+        <p id="stock-error" class="error hidden"></p>
       </div>
 
       <div id="gif-controls" class="source-controls hidden">
@@ -170,10 +183,12 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="gif-config.js"></script>
+<script src="images-config.js"></script>
 <script src="account.js"></script>
 <script src="inbox.js"></script>
 <script src="friends.js"></script>
 <script src="gifs.js"></script>
+<script src="stockimages.js"></script>
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {

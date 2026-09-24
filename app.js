@@ -15,12 +15,14 @@ window.addEventListener("beforeunload", () => stopCamera());
 const uploadControls = document.getElementById("upload-controls");
 const cameraControls = document.getElementById("camera-controls");
 const gifControls = document.getElementById("gif-controls");
+const stockControls = document.getElementById("stock-controls");
 document.querySelectorAll('input[name="source"]').forEach((radio) => {
   radio.addEventListener("change", () => {
     const source = document.querySelector('input[name="source"]:checked').value;
     uploadControls.classList.toggle("hidden", source !== "upload");
     cameraControls.classList.toggle("hidden", source !== "camera");
     gifControls.classList.toggle("hidden", source !== "gif");
+    stockControls.classList.toggle("hidden", source !== "stock");
     if (source !== "camera") stopCamera();
     refreshPreview();
   });
@@ -33,6 +35,7 @@ const messageEl = document.getElementById("message");
 let uploadedImage = null; // Canvas mit hochgeladenem/skaliertem Bild
 let capturedPhotoCanvas = null; // Canvas mit aufgenommenem Kamerafoto
 let selectedGifCanvas = null; // Canvas mit ausgewähltem GIF-Frame
+let selectedStockCanvas = null; // Canvas mit ausgewähltem Foto (Pixabay)
 let cameraStream = null;
 
 // Bilder werden auf diese maximale Kantenlänge herunterskaliert – hält die
@@ -167,13 +170,18 @@ function refreshPreview() {
   const message = messageEl.value;
   const requiredPixels = requiredPixelsForMessage(message);
 
-  const hasImage =
-    source === "upload" ? !!uploadedImage : source === "camera" ? !!capturedPhotoCanvas : !!selectedGifCanvas;
-  if (!hasImage) {
+  const sourceCanvases = {
+    upload: uploadedImage,
+    camera: capturedPhotoCanvas,
+    gif: selectedGifCanvas,
+    stock: selectedStockCanvas,
+  };
+  if (!sourceCanvases[source]) {
     const messages = {
       upload: "Bitte ein Bild hochladen.",
       camera: "Bitte zuerst ein Foto aufnehmen.",
       gif: "Bitte zuerst ein GIF auswählen.",
+      stock: "Bitte zuerst ein Foto auswählen.",
     };
     capacityInfoEl.textContent = messages[source];
     capacityInfoEl.className = "capacity-info";
@@ -214,23 +222,21 @@ document.getElementById("btn-hide").addEventListener("click", async () => {
   btnHideEl.disabled = true;
   let workCanvas;
   try {
-    if (source === "upload") {
-      if (!uploadedImage) return showHideError("Bitte zuerst ein Bild hochladen.");
-      workCanvas = document.createElement("canvas");
-      drawImageToCanvas(workCanvas, uploadedImage);
-    } else if (source === "camera") {
-      if (!capturedPhotoCanvas) return showHideError("Bitte zuerst ein Foto aufnehmen.");
-      workCanvas = document.createElement("canvas");
-      workCanvas.width = capturedPhotoCanvas.width;
-      workCanvas.height = capturedPhotoCanvas.height;
-      workCanvas.getContext("2d").drawImage(capturedPhotoCanvas, 0, 0);
-    } else if (source === "gif") {
-      if (!selectedGifCanvas) return showHideError("Bitte zuerst ein GIF auswählen.");
-      workCanvas = document.createElement("canvas");
-      workCanvas.width = selectedGifCanvas.width;
-      workCanvas.height = selectedGifCanvas.height;
-      workCanvas.getContext("2d").drawImage(selectedGifCanvas, 0, 0);
-    }
+    const sourceMessages = {
+      upload: "Bitte zuerst ein Bild hochladen.",
+      camera: "Bitte zuerst ein Foto aufnehmen.",
+      gif: "Bitte zuerst ein GIF auswählen.",
+      stock: "Bitte zuerst ein Foto auswählen.",
+    };
+    const sourceCanvas = { upload: uploadedImage, camera: capturedPhotoCanvas, gif: selectedGifCanvas, stock: selectedStockCanvas }[
+      source
+    ];
+    if (!sourceCanvas) return showHideError(sourceMessages[source]);
+
+    workCanvas = document.createElement("canvas");
+    workCanvas.width = sourceCanvas.width;
+    workCanvas.height = sourceCanvas.height;
+    workCanvas.getContext("2d").drawImage(sourceCanvas, 0, 0);
 
     const ctx = workCanvas.getContext("2d");
     const imageData = ctx.getImageData(0, 0, workCanvas.width, workCanvas.height);
