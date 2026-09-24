@@ -145,11 +145,6 @@
         <p class="success-msg">✅ Nachricht erfolgreich versteckt!</p>
         <img id="result-image" alt="Ergebnisbild" />
 
-        <div class="recommended-box">
-          <a id="download-html-link" class="btn-primary btn-download-html" download="secret-entschluesseln.html">🔓 Empfohlen: Entschlüsselbare Datei herunterladen</a>
-          <p class="hint">Öffnet sich in jedem Browser und entschlüsselt sich selbst – übersteht auch JPEG-Konvertierung beim Versenden, da das Bild fest in der Datei eingebettet ist.</p>
-        </div>
-
         <div id="send-to-user-box" class="send-to-user-box hidden">
           <label for="send-to-username">📨 An CryptoChat-Nutzer senden</label>
           <div id="send-friend-chips" class="friend-chips hidden"></div>
@@ -159,16 +154,7 @@
           </div>
           <p id="send-to-user-status" class="hint hidden"></p>
         </div>
-
-        <details class="advanced-details">
-          <summary>Alternative: reines PNG-Bild</summary>
-          <div class="result-actions">
-            <a id="download-link" class="btn-secondary" download="secret.png">Bild herunterladen (PNG)</a>
-            <button type="button" id="btn-share" class="btn-secondary">📤 Bild teilen</button>
-          </div>
-          <p id="share-status" class="hint hidden"></p>
-          <p class="hint">⚠️ Funktioniert nur, solange das Bild als PNG bleibt – wird es zu JPEG konvertiert (z. B. von manchen Messengern/Social-Media-Apps), ist die Nachricht zerstört.</p>
-        </details>
+        <p id="send-signed-out-hint" class="hint">Bitte oben anmelden, um die Nachricht an einen CryptoChat-Nutzer zu senden – das ist der einzige Versandweg.</p>
       </div>
       <div id="hide-error" class="error hidden"></div>
     </div>

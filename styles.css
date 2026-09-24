@@ -284,60 +284,10 @@ canvas {
 
 .result img { max-width: 100%; border-radius: 10px; border: 1px solid var(--border); }
 
-.result-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.result-actions .btn-secondary {
-  cursor: pointer;
-  font: inherit;
-}
-
 .success-msg { color: var(--success); font-weight: 600; margin: 0; }
 
 .hint { color: var(--text-dim); font-size: 0.8rem; text-align: center; margin: 0; }
 .hint.hidden { display: none; }
-
-.recommended-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px solid var(--accent);
-  background: #7c5cff14;
-}
-
-.btn-download-html {
-  display: inline-block;
-  text-align: center;
-  text-decoration: none;
-  width: 100%;
-}
-
-.recommended-box .hint { color: var(--text-dim); }
-
-.advanced-details {
-  width: 100%;
-  color: var(--text-dim);
-  font-size: 0.85rem;
-}
-
-.advanced-details summary {
-  cursor: pointer;
-  padding: 6px 0;
-  font-weight: 600;
-}
-
-.advanced-details > div,
-.advanced-details > p {
-  margin-top: 10px;
-}
 
 #revealed-message {
   white-space: pre-wrap;

@@ -20,25 +20,25 @@
   <p>Stand: 20. September 2026</p>
 
   <h2>Kurzfassung</h2>
-  <p>Alle Kernfunktionen von CryptoChat (Verschlüsseln, Verstecken, Extrahieren) laufen ausschließlich lokal auf deinem Gerät – kein Server, kein Tracking. Optional kannst du ein Konto anlegen, um Nachrichten direkt an andere CryptoChat-Nutzer zu schicken; dabei wird ein bereits verschlüsseltes Bild über den Dienst Google Firebase übermittelt (siehe unten). Nachrichtentext und Passwort verlassen dein Gerät dabei trotzdem nie.</p>
+  <p>Verschlüsseln, Verstecken und Extrahieren laufen ausschließlich lokal auf deinem Gerät – kein Server, kein Tracking. Um eine Nachricht an eine andere Person zu <strong>senden</strong>, ist ein kostenloses CryptoChat-Konto nötig (das ist der einzige Versandweg); dabei wird ausschließlich das bereits verschlüsselte Bild über den Dienst Google Firebase übermittelt. Nachrichtentext und Passwort verlassen dein Gerät dabei trotzdem nie.</p>
 
   <h2>Welche Daten werden verarbeitet?</h2>
   <ul>
     <li><strong>Nachrichtentext und Passwort:</strong> werden nur im Arbeitsspeicher deines Geräts verarbeitet (Verschlüsselung per AES-256-GCM, Schlüsselableitung per PBKDF2), um Bilder zu erzeugen bzw. zu entschlüsseln. Sie werden nicht gespeichert oder übertragen.</li>
-    <li><strong>Bilder (hochgeladen, generiert oder per Kamera aufgenommen):</strong> werden ausschließlich lokal im Browser/der App verarbeitet, um die Nachricht darin zu verstecken bzw. daraus zu extrahieren.</li>
-    <li><strong>Kamerazugriff:</strong> wird nur verwendet, wenn du aktiv "Foto aufnehmen" wählst, um ein Trägerbild zu erstellen. Aufnahmen werden nicht gespeichert oder übertragen, außer du lädst das Ergebnis selbst herunter oder teilst es aktiv.</li>
+    <li><strong>Bilder (hochgeladen, generiert, per Kamera aufgenommen oder als GIF gesucht):</strong> werden lokal im Browser/der App verarbeitet, um die Nachricht darin zu verstecken bzw. daraus zu extrahieren. Bei der GIF-Suche wird dein Suchbegriff an den Dienst GIPHY übermittelt (siehe unten).</li>
+    <li><strong>Kamerazugriff:</strong> wird nur verwendet, wenn du aktiv "Foto aufnehmen" wählst, um ein Trägerbild zu erstellen.</li>
   </ul>
 
   <h2>Keine Server-Kommunikation (Kernfunktionen)</h2>
-  <p>Die Kernfunktionen benötigen keine Internetverbindung (nach dem ersten Laden). Es werden keine Analytics-, Tracking- oder Werbe-SDKs eingesetzt.</p>
+  <p>Verschlüsseln/Verstecken/Extrahieren funktionieren komplett offline (nach dem ersten Laden). Es werden keine Analytics-, Tracking- oder Werbe-SDKs eingesetzt.</p>
 
-  <h2>Optionales Konto & "An Nutzer senden"</h2>
-  <p>Wenn du dich freiwillig registrierst, werden E-Mail-Adresse und selbstgewählter Nutzername beim Dienst <strong>Google Firebase</strong> (Google Ireland Ltd.) gespeichert, der als Auftragsverarbeiter für CryptoChat fungiert. Nutzt du die Funktion "An CryptoChat-Nutzer senden", wird das <strong>bereits verschlüsselte Bild</strong> (Ciphertext) über Firebase an das Konto des Empfängers übermittelt, bis dieser es abruft und wieder löscht.</p>
-  <p>Wichtig: Die Nachricht wird ausschließlich in bereits AES-256-verschlüsselter Form übertragen. Weder Firebase noch wir können den Klartext lesen – das zum Entschlüsseln nötige Passwort wird nicht mit übertragen und muss weiterhin auf anderem Weg (persönlich, Anruf, etc.) ausgetauscht werden. Ohne Konto und ohne Nutzung dieser Funktion werden keinerlei Daten an Firebase übertragen.</p>
+  <h2>Konto & Nachrichtenversand</h2>
+  <p>Bei der Registrierung werden E-Mail-Adresse, selbstgewählter Nutzername und optional ein Profilbild beim Dienst <strong>Google Firebase</strong> (Google Ireland Ltd.) gespeichert, der als Auftragsverarbeiter für CryptoChat fungiert. Wenn du eine Nachricht sendest, wird das <strong>bereits verschlüsselte Bild</strong> (Ciphertext) über Firebase an das Konto des Empfängers übermittelt, bis dieser es abruft und wieder löscht. Deine Freundesliste (falls angelegt) wird ebenfalls dort gespeichert und ist nur für dich selbst sichtbar.</p>
+  <p>Wichtig: Die Nachricht wird ausschließlich in bereits AES-256-verschlüsselter Form übertragen. Weder Firebase noch wir können den Klartext lesen – das zum Entschlüsseln nötige Passwort wird nicht mit übertragen und muss weiterhin auf anderem Weg (persönlich, Anruf, etc.) ausgetauscht werden.</p>
   <p>Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) bei der Registrierung. Du kannst dein Konto und deine Nachrichten jederzeit löschen (Kontakt siehe unten).</p>
 
-  <h2>Teilen-Funktion</h2>
-  <p>Wenn du die "Teilen"-Funktion nutzt, übergibst du das erzeugte Bild bzw. die HTML-Datei aktiv an eine App deiner Wahl (z. B. Messenger, E-Mail). Dieser Vorgang wird vom Betriebssystem gesteuert; CryptoChat selbst sendet nichts eigenständig.
+  <h2>GIF-Suche (GIPHY)</h2>
+  <p>Wenn du die Bildquelle "GIF suchen" nutzt, wird dein Suchbegriff an den Dienst <strong>GIPHY</strong> (Giphy, Inc.) übermittelt, um passende GIFs anzuzeigen. Es werden dabei keine weiteren personenbezogenen Daten von dir an GIPHY übertragen.</p>
 
   <h2>Kontakt</h2>
   <p>Fragen zum Datenschutz: <a href="mailto:lamineabdouraman@gmail.com">lamineabdouraman@gmail.com</a></p>

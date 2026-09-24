@@ -1,9 +1,5 @@
 /* UI-Logik: Tabs, Bildquellen, Vorschau, Verstecken/Extrahieren */
 
-// Link zur App für Empfänger, die CryptoChat noch nicht haben. Auf den
-// Play-Store-Eintrag umstellen, sobald der veröffentlicht ist.
-const APP_LINK = "https://lamine-abdouraman.github.io/cryptochat/";
-
 document.querySelectorAll(".tab-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
@@ -328,6 +324,7 @@ function clampByte(v) {
 
 const hideErrorEl = document.getElementById("hide-error");
 const hideResultEl = document.getElementById("hide-result");
+let currentResultBlob = null; // vom "An CryptoChat-Nutzer senden"-Flow in inbox.js verwendet
 
 document.getElementById("btn-hide").addEventListener("click", async () => {
   hideErrorEl.classList.add("hidden");
@@ -378,31 +375,11 @@ document.getElementById("btn-hide").addEventListener("click", async () => {
 
     currentResultBlob = blob;
     document.getElementById("result-image").src = url;
-    const link = document.getElementById("download-link");
-    link.href = url;
-    shareStatusEl.classList.add("hidden");
     hideResultEl.classList.remove("hidden");
-
-    const htmlBlob = await buildSelfDecryptingHtml(blob);
-    document.getElementById("download-html-link").href = URL.createObjectURL(htmlBlob);
   } catch (err) {
     showHideError(err.message || String(err));
   }
 });
-
-// --- Selbstentschlüsselnde HTML-Datei ---
-// Bettet das PNG als Data-URL direkt in eine HTML-Seite ein, zusammen mit der
-// Entschlüsselungslogik. Da es sich um eine Textdatei (kein Bild-Anhang) handelt,
-// wird sie von Messengern/sozialen Netzwerken nicht in JPEG umgewandelt.
-
-let cryptoStegoSourceCache = null;
-
-async function getCryptoStegoSource() {
-  if (!cryptoStegoSourceCache) {
-    cryptoStegoSourceCache = await fetch("crypto-stego.js").then((r) => r.text());
-  }
-  return cryptoStegoSourceCache;
-}
 
 function blobToDataURL(blob) {
   return new Promise((resolve, reject) => {
@@ -413,128 +390,9 @@ function blobToDataURL(blob) {
   });
 }
 
-async function buildSelfDecryptingHtml(pngBlob) {
-  const [cryptoStegoSrc, imageDataUrl] = await Promise.all([
-    getCryptoStegoSource(),
-    blobToDataURL(pngBlob),
-  ]);
-
-  return new Blob([SELF_DECRYPT_HTML_TEMPLATE(cryptoStegoSrc, imageDataUrl)], { type: "text/html" });
-}
-
-function SELF_DECRYPT_HTML_TEMPLATE(cryptoStegoSrc, imageDataUrl) {
-  return `<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>CryptoChat – Verstecktes Bild</title>
-<style>
-  body { font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background:#0f1220; color:#e9e9f4; display:flex; flex-direction:column; align-items:center; padding:32px 16px; margin:0; min-height:100vh; box-sizing:border-box; }
-  h1 { font-size:1.4rem; margin:0 0 4px; }
-  p.hint { color:#9a9cb8; font-size:0.85rem; margin:0 0 16px; text-align:center; max-width:420px; }
-  img { max-width:320px; width:100%; border-radius:12px; border:1px solid #2a2f4a; margin-bottom:16px; }
-  .card { display:flex; flex-direction:column; align-items:center; gap:10px; width:100%; max-width:420px; }
-  input { font-size:0.95rem; padding:10px 12px; border-radius:10px; border:1px solid #2a2f4a; width:100%; box-sizing:border-box; background:#10142450; color:#e9e9f4; }
-  button { font-size:0.95rem; padding:10px 12px; border-radius:10px; border:none; width:100%; background:linear-gradient(90deg,#7c5cff,#22d3aa); color:#0a0c18; font-weight:700; cursor:pointer; }
-  pre { white-space:pre-wrap; word-break:break-word; background:#10142450; border:1px solid #2a2f4a; border-radius:10px; padding:12px; width:100%; box-sizing:border-box; margin:0; font-family:inherit; }
-  .error { color:#ff6b6b; margin:0; font-size:0.9rem; }
-  .error.hidden, pre.hidden { display:none; }
-  .invite { margin-top:24px; padding-top:16px; border-top:1px solid #2a2f4a; text-align:center; max-width:420px; }
-  .invite a { color:#7c5cff; font-weight:600; text-decoration:none; }
-</style>
-</head>
-<body>
-  <h1>🔐 CryptoChat</h1>
-  <p class="hint">Dieses Bild enthält eine versteckte, verschlüsselte Nachricht. Passwort eingeben, um sie sichtbar zu machen. Läuft komplett offline in deinem Browser, es wird nichts übertragen.</p>
-  <img id="stego-img" src="${imageDataUrl}" alt="Verstecktes Bild" />
-  <div class="card">
-    <input type="password" id="pw" placeholder="Passwort" autocomplete="current-password" />
-    <button id="btn-decrypt" type="button">Entschlüsseln</button>
-    <pre id="out" class="hidden"></pre>
-    <p class="error hidden" id="err"></p>
-  </div>
-  <p class="invite hint">Noch keine CryptoChat-App? <a href="${APP_LINK}" target="_blank" rel="noopener">Hier bekommst du sie</a> – kostenlos, ohne Installation direkt im Browser nutzbar.</p>
-<script>
-${cryptoStegoSrc}
-</script>
-<script>
-  document.getElementById("btn-decrypt").addEventListener("click", async () => {
-    const errEl = document.getElementById("err");
-    const outEl = document.getElementById("out");
-    errEl.classList.add("hidden");
-    outEl.classList.add("hidden");
-    const password = document.getElementById("pw").value;
-    if (!password) {
-      errEl.textContent = "Bitte Passwort eingeben.";
-      errEl.classList.remove("hidden");
-      return;
-    }
-    try {
-      const img = document.getElementById("stego-img");
-      const canvas = document.createElement("canvas");
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      canvas.getContext("2d").drawImage(img, 0, 0);
-      const imageData = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height);
-      const payload = extractPayload(imageData);
-      const message = await decryptPayload(password, payload);
-      outEl.textContent = message;
-      outEl.classList.remove("hidden");
-    } catch (e) {
-      errEl.textContent = "Entschlüsselung fehlgeschlagen. Falsches Passwort?";
-      errEl.classList.remove("hidden");
-    }
-  });
-</script>
-</body>
-</html>`;
-}
-
 function showHideError(msg) {
   hideErrorEl.textContent = "⚠️ " + msg;
   hideErrorEl.classList.remove("hidden");
-}
-
-// --- Bild teilen ---
-
-let currentResultBlob = null;
-const shareStatusEl = document.getElementById("share-status");
-
-document.getElementById("btn-share").addEventListener("click", async () => {
-  if (!currentResultBlob) return;
-  shareStatusEl.classList.add("hidden");
-
-  const file = new File([currentResultBlob], "secret.png", { type: "image/png" });
-
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    try {
-      await navigator.share({
-        files: [file],
-        title: "CryptoChat-Bild",
-        text:
-          "Verstecktes Bild aus CryptoChat (nur als PNG öffnen/weitergeben). " +
-          "Zum Entschlüsseln brauchst du das Passwort und die App: " +
-          APP_LINK,
-      });
-      return;
-    } catch (err) {
-      if (err.name === "AbortError") return; // Nutzer hat den Teilen-Dialog abgebrochen
-      // sonst weiter zum Zwischenablage-Fallback
-    }
-  }
-
-  try {
-    await navigator.clipboard.write([new ClipboardItem({ "image/png": currentResultBlob })]);
-    showShareStatus("✅ Bild in die Zwischenablage kopiert – zum Teilen irgendwo einfügen.");
-  } catch {
-    showShareStatus("⚠️ Teilen wird hier nicht unterstützt. Bitte über \"Bild herunterladen\" speichern und manuell teilen.");
-  }
-});
-
-function showShareStatus(msg) {
-  shareStatusEl.textContent = msg;
-  shareStatusEl.classList.remove("hidden");
 }
 
 // --- Reveal Tab ---

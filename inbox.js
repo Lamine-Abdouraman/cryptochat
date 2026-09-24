@@ -8,9 +8,11 @@ const sendToUserBox = document.getElementById("send-to-user-box");
 const sendToUsernameInput = document.getElementById("send-to-username");
 const btnSendToUser = document.getElementById("btn-send-to-user");
 const sendToUserStatus = document.getElementById("send-to-user-status");
+const sendSignedOutHint = document.getElementById("send-signed-out-hint");
 
 document.addEventListener("cryptochat-auth-changed", (e) => {
   sendToUserBox.classList.toggle("hidden", !e.detail);
+  sendSignedOutHint.classList.toggle("hidden", !!e.detail);
 });
 
 btnSendToUser.addEventListener("click", async () => {
