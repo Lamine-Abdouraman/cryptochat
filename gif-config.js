@@ -7,4 +7,4 @@
  * Wie firebaseConfig ist auch das ein reiner Client-Bezeichner, sicher im
  * Frontend nutzbar.
  */
-const GIPHY_API_KEY = "DEIN_GIPHY_API_KEY";
+const GIPHY_API_KEY = "71SWSEpp4p0wHKlocODC6mwj29e85yj1";
