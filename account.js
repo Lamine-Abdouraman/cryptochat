@@ -28,6 +28,41 @@ function isValidUsername(username) {
   return /^[a-zA-Z0-9_]{3,20}$/.test(username);
 }
 
+const AVATAR_SIZE = 128;
+const AVATAR_COLORS = ["#7c5cff", "#22d3aa", "#ff9f5c", "#ff6b9d", "#5cc9ff"];
+
+/** Skaliert/croppt ein Bild clientseitig auf ein kleines quadratisches JPEG (Base64). */
+function resizeImageToAvatar(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const side = Math.min(img.naturalWidth, img.naturalHeight);
+      const sx = (img.naturalWidth - side) / 2;
+      const sy = (img.naturalHeight - side) / 2;
+      const canvas = document.createElement("canvas");
+      canvas.width = AVATAR_SIZE;
+      canvas.height = AVATAR_SIZE;
+      canvas
+        .getContext("2d")
+        .drawImage(img, sx, sy, side, side, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
+      resolve(canvas.toDataURL("image/jpeg", 0.7));
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+/** Erzeugt HTML für einen Avatar: eigenes Bild oder ein Platzhalter-Kreis mit Anfangsbuchstabe. */
+function avatarHtml(avatarDataUrl, username, sizeClass) {
+  const cls = "avatar" + (sizeClass ? " " + sizeClass : "");
+  if (avatarDataUrl) {
+    return `<img src="${avatarDataUrl}" alt="" class="${cls}" />`;
+  }
+  const letter = (username || "?").trim().charAt(0).toUpperCase();
+  const color = AVATAR_COLORS[letter.charCodeAt(0) % AVATAR_COLORS.length];
+  return `<span class="${cls} avatar-fallback" style="background:${color}">${letter}</span>`;
+}
+
 document.getElementById("btn-signup").addEventListener("click", async () => {
   clearAccountError();
   const email = document.getElementById("signup-email").value.trim();
@@ -60,7 +95,7 @@ document.getElementById("btn-signup").addEventListener("click", async () => {
     // onAuthStateChanged kann schon vor diesen Schreibvorgängen ausgelöst worden
     // sein (Race Condition) und dann noch kein Profil finden -> hier zusätzlich
     // direkt aktualisieren, damit der Nutzername sofort korrekt angezeigt wird.
-    applySignedInUser(uid, username);
+    applySignedInUser(uid, username, null);
   } catch (err) {
     showAccountError(err.message || String(err));
   }
@@ -93,13 +128,30 @@ document.getElementById("btn-forgot-password").addEventListener("click", async (
   }
 });
 
-function applySignedInUser(uid, username) {
-  currentUser = { uid, username };
+const accountAvatarBox = document.getElementById("account-avatar-box");
+const avatarUploadInput = document.getElementById("avatar-upload-input");
+
+function applySignedInUser(uid, username, avatar) {
+  currentUser = { uid, username, avatar: avatar || null };
   accountUsernameLabel.textContent = "@" + username;
+  accountAvatarBox.innerHTML = avatarHtml(currentUser.avatar, username, "avatar-md");
   accountSignedOutView.classList.add("hidden");
   accountSignedInView.classList.remove("hidden");
   document.dispatchEvent(new CustomEvent("cryptochat-auth-changed", { detail: currentUser }));
 }
+
+avatarUploadInput.addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file || !currentUser) return;
+  clearAccountError();
+  try {
+    const avatarDataUrl = await resizeImageToAvatar(file);
+    await db.collection("users").doc(currentUser.uid).set({ avatar: avatarDataUrl }, { merge: true });
+    applySignedInUser(currentUser.uid, currentUser.username, avatarDataUrl);
+  } catch (err) {
+    showAccountError(err.message || String(err));
+  }
+});
 
 auth.onAuthStateChanged(async (user) => {
   clearAccountError();
@@ -128,5 +180,6 @@ auth.onAuthStateChanged(async (user) => {
   }
 
   const username = profile.exists ? profile.data().username : user.email;
-  applySignedInUser(user.uid, username);
+  const avatar = profile.exists ? profile.data().avatar : null;
+  applySignedInUser(user.uid, username, avatar);
 });

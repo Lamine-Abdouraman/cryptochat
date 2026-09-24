@@ -1,4 +1,4 @@
-const CACHE_NAME = "cryptostego-v5";
+const CACHE_NAME = "cryptostego-v6";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -7,7 +7,10 @@ const APP_SHELL = [
   "./crypto-stego.js",
   "./account.js",
   "./inbox.js",
+  "./friends.js",
+  "./gifs.js",
   "./firebase-config.js",
+  "./gif-config.js",
   "./manifest.json",
   "./privacy.html",
   "./icons/icon-192.png",

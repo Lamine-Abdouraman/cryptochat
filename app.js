@@ -19,12 +19,14 @@ window.addEventListener("beforeunload", () => stopCamera());
 const uploadControls = document.getElementById("upload-controls");
 const generateControls = document.getElementById("generate-controls");
 const cameraControls = document.getElementById("camera-controls");
+const gifControls = document.getElementById("gif-controls");
 document.querySelectorAll('input[name="source"]').forEach((radio) => {
   radio.addEventListener("change", () => {
     const source = document.querySelector('input[name="source"]:checked').value;
     uploadControls.classList.toggle("hidden", source !== "upload");
     generateControls.classList.toggle("hidden", source !== "generate");
     cameraControls.classList.toggle("hidden", source !== "camera");
+    gifControls.classList.toggle("hidden", source !== "gif");
     if (source !== "camera") stopCamera();
     refreshPreview();
   });
@@ -39,6 +41,7 @@ const genColor2El = document.getElementById("gen-color2");
 
 let uploadedImage = null; // HTMLImageElement für den Hide-Tab
 let capturedPhotoCanvas = null; // Canvas mit aufgenommenem Kamerafoto
+let selectedGifCanvas = null; // Canvas mit ausgewähltem GIF-Frame
 let cameraStream = null;
 let currentSeed = Math.floor(Math.random() * 1_000_000);
 
@@ -161,11 +164,16 @@ function refreshPreview() {
   const message = messageEl.value;
   const requiredPixels = requiredPixelsForMessage(message);
 
-  if (source === "upload" || source === "camera") {
-    const hasImage = source === "upload" ? !!uploadedImage : !!capturedPhotoCanvas;
+  if (source === "upload" || source === "camera" || source === "gif") {
+    const hasImage =
+      source === "upload" ? !!uploadedImage : source === "camera" ? !!capturedPhotoCanvas : !!selectedGifCanvas;
     if (!hasImage) {
-      capacityInfoEl.textContent =
-        source === "upload" ? "Bitte ein Bild hochladen." : "Bitte zuerst ein Foto aufnehmen.";
+      const messages = {
+        upload: "Bitte ein Bild hochladen.",
+        camera: "Bitte zuerst ein Foto aufnehmen.",
+        gif: "Bitte zuerst ein GIF auswählen.",
+      };
+      capacityInfoEl.textContent = messages[source];
       capacityInfoEl.className = "capacity-info";
       return;
     }
@@ -344,6 +352,12 @@ document.getElementById("btn-hide").addEventListener("click", async () => {
       workCanvas.width = capturedPhotoCanvas.width;
       workCanvas.height = capturedPhotoCanvas.height;
       workCanvas.getContext("2d").drawImage(capturedPhotoCanvas, 0, 0);
+    } else if (source === "gif") {
+      if (!selectedGifCanvas) return showHideError("Bitte zuerst ein GIF auswählen.");
+      workCanvas = document.createElement("canvas");
+      workCanvas.width = selectedGifCanvas.width;
+      workCanvas.height = selectedGifCanvas.height;
+      workCanvas.getContext("2d").drawImage(selectedGifCanvas, 0, 0);
     } else {
       refreshPreview(); // sicherstellen, dass die Vorschau zur aktuellen Nachricht passt
       workCanvas = document.createElement("canvas");

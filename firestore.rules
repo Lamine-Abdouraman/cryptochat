@@ -14,12 +14,19 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // Profil eines Nutzers. Nur der Owner darf schreiben, alle Angemeldeten
-    // dürfen lesen (z.B. um den Absendernamen anzuzeigen).
+    // Profil eines Nutzers (inkl. optionalem Avatar). Nur der Owner darf
+    // schreiben, alle Angemeldeten dürfen lesen (z.B. um den Absendernamen
+    // und das Profilbild anzuzeigen).
     match /users/{uid} {
       allow read: if request.auth != null;
       allow create, update: if request.auth != null && request.auth.uid == uid;
       allow delete: if false;
+
+      // Persönliche Freundesliste. Komplett privat, nur der Owner darf sie
+      // lesen oder schreiben.
+      match /friends/{friendId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
     }
 
     // Verschlüsselte Nachrichten. Erstellbar nur im eigenen Namen (from == eigene UID).

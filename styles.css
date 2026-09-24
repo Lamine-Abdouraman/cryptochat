@@ -500,7 +500,7 @@ canvas {
   min-width: 0;
 }
 
-.inbox-from { margin: 0; font-weight: 600; }
+.inbox-from { margin: 0; font-weight: 600; display: flex; align-items: center; gap: 6px; }
 .inbox-date { margin: 0; font-size: 0.78rem; color: var(--text-dim); }
 
 .inbox-password {
@@ -533,3 +533,133 @@ canvas {
 
 .inbox-plaintext.hidden,
 .inbox-error.hidden { display: none; }
+
+/* --- Avatare --- */
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.avatar-fallback {
+  color: white;
+  font-weight: 700;
+}
+
+.avatar-xs { width: 20px; height: 20px; font-size: 0.65rem; }
+.avatar-sm { width: 32px; height: 32px; font-size: 0.85rem; }
+.avatar-md { width: 48px; height: 48px; font-size: 1.1rem; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.account-signed-in-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.account-avatar-box { flex-shrink: 0; }
+
+.account-signed-in-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.account-signed-in-info p { margin: 0; font-size: 0.9rem; }
+.account-signed-in-info label { font-size: 0.78rem; cursor: pointer; }
+
+/* --- GIF-Bildquelle --- */
+
+.gif-search-row {
+  display: flex;
+  gap: 8px;
+}
+
+.gif-search-row input {
+  flex: 1;
+  background: #10142450;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 11px;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.gif-search-row button { cursor: pointer; }
+
+.gif-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.gif-thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.gif-thumb.selected { border-color: var(--accent); }
+
+/* --- Freunde --- */
+
+.friends-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.friend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #10142450;
+}
+
+.friend-username { flex: 1; font-weight: 600; }
+
+.friend-item button { cursor: pointer; font-size: 0.85rem; }
+
+.friend-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.friend-chips.hidden { display: none; }
+
+.friend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #10142450;
+  color: var(--text);
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.friend-chip:hover { border-color: var(--accent); }

@@ -40,6 +40,7 @@ btnSendToUser.addEventListener("click", async () => {
       to: toUid,
       from: currentUser.uid,
       fromUsername: currentUser.username,
+      fromAvatar: currentUser.avatar || null,
       imageData: dataUrl,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       read: false,
@@ -106,7 +107,7 @@ function renderInboxMessage(id, data) {
   item.innerHTML = `
     <img src="${data.imageData}" alt="Verschlüsseltes Bild" class="inbox-thumb" />
     <div class="inbox-meta">
-      <p class="inbox-from">@${escapeHtml(data.fromUsername)}</p>
+      <p class="inbox-from">${avatarHtml(data.fromAvatar, data.fromUsername, "avatar-sm")} @${escapeHtml(data.fromUsername)}</p>
       <p class="inbox-date">${when.toLocaleString("de-DE")}</p>
       <input type="password" placeholder="Passwort" class="inbox-password" />
       <div class="inbox-actions">

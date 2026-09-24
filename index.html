@@ -37,8 +37,13 @@
       </details>
       <p id="account-error" class="error hidden"></p>
     </div>
-    <div id="account-signed-in" class="hidden">
-      <p>Angemeldet als <strong id="account-username-label"></strong></p>
+    <div id="account-signed-in" class="hidden account-signed-in-row">
+      <div id="account-avatar-box" class="account-avatar-box"></div>
+      <div class="account-signed-in-info">
+        <p>Angemeldet als <strong id="account-username-label"></strong></p>
+        <label for="avatar-upload-input" class="btn-link">Profilbild ändern</label>
+        <input type="file" id="avatar-upload-input" accept="image/*" class="visually-hidden" />
+      </div>
       <button type="button" id="btn-logout" class="btn-link">Abmelden</button>
     </div>
   </div>
@@ -47,6 +52,7 @@
     <button class="tab-btn active" data-tab="hide">Verstecken</button>
     <button class="tab-btn" data-tab="reveal">Extrahieren</button>
     <button class="tab-btn" data-tab="inbox">Posteingang</button>
+    <button class="tab-btn" data-tab="friends">Freunde</button>
   </nav>
 
   <!-- HIDE TAB -->
@@ -73,11 +79,24 @@
             <input type="radio" name="source" value="camera" />
             Foto aufnehmen
           </label>
+          <label class="radio-pill">
+            <input type="radio" name="source" value="gif" />
+            GIF suchen
+          </label>
         </div>
       </div>
 
       <div id="upload-controls" class="source-controls">
         <input type="file" id="image-upload" accept="image/*" />
+      </div>
+
+      <div id="gif-controls" class="source-controls hidden">
+        <div class="gif-search-row">
+          <input type="text" id="gif-search-input" placeholder="GIF suchen (z.B. Katze, lustig...)" />
+          <button type="button" id="btn-gif-search" class="btn-secondary">Suchen</button>
+        </div>
+        <div id="gif-results" class="gif-results"></div>
+        <p id="gif-error" class="error hidden"></p>
       </div>
 
       <div id="camera-controls" class="source-controls hidden">
@@ -133,6 +152,7 @@
 
         <div id="send-to-user-box" class="send-to-user-box hidden">
           <label for="send-to-username">📨 An CryptoChat-Nutzer senden</label>
+          <div id="send-friend-chips" class="friend-chips hidden"></div>
           <div class="send-to-user-row">
             <input type="text" id="send-to-username" placeholder="Nutzername des Empfängers" autocomplete="off" />
             <button type="button" id="btn-send-to-user" class="btn-secondary">Senden</button>
@@ -184,6 +204,23 @@
     </div>
   </section>
 
+  <!-- FRIENDS TAB -->
+  <section id="tab-friends" class="tab-panel">
+    <div class="card">
+      <p id="friends-signed-out" class="hint">Bitte oben anmelden, um Freunde hinzuzufügen.</p>
+      <div id="friends-signed-in" class="hidden">
+        <label for="add-friend-username">Freund hinzufügen</label>
+        <div class="send-to-user-row">
+          <input type="text" id="add-friend-username" placeholder="Nutzername" autocomplete="off" />
+          <button type="button" id="btn-add-friend" class="btn-secondary">Hinzufügen</button>
+        </div>
+        <p id="friends-error" class="error hidden"></p>
+        <p id="friends-empty" class="hint hidden">Noch keine Freunde hinzugefügt.</p>
+        <div id="friends-list" class="friends-list"></div>
+      </div>
+    </div>
+  </section>
+
   <footer class="app-footer">
     <p>AES-256-GCM · PBKDF2 (200.000 Iterationen) · LSB-Steganografie — alles läuft lokal im Browser, nichts wird hochgeladen.</p>
     <p><a href="privacy.html">Datenschutzerklärung</a></p>
@@ -195,8 +232,11 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
+<script src="gif-config.js"></script>
 <script src="account.js"></script>
 <script src="inbox.js"></script>
+<script src="friends.js"></script>
+<script src="gifs.js"></script>
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
