@@ -13,14 +13,12 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
 window.addEventListener("beforeunload", () => stopCamera());
 
 const uploadControls = document.getElementById("upload-controls");
-const generateControls = document.getElementById("generate-controls");
 const cameraControls = document.getElementById("camera-controls");
 const gifControls = document.getElementById("gif-controls");
 document.querySelectorAll('input[name="source"]').forEach((radio) => {
   radio.addEventListener("change", () => {
     const source = document.querySelector('input[name="source"]:checked').value;
     uploadControls.classList.toggle("hidden", source !== "upload");
-    generateControls.classList.toggle("hidden", source !== "generate");
     cameraControls.classList.toggle("hidden", source !== "camera");
     gifControls.classList.toggle("hidden", source !== "gif");
     if (source !== "camera") stopCamera();
@@ -31,15 +29,11 @@ document.querySelectorAll('input[name="source"]').forEach((radio) => {
 const previewCanvasHide = document.getElementById("preview-canvas-hide");
 const capacityInfoEl = document.getElementById("capacity-info");
 const messageEl = document.getElementById("message");
-const genStyleEl = document.getElementById("gen-style");
-const genColor1El = document.getElementById("gen-color1");
-const genColor2El = document.getElementById("gen-color2");
 
 let uploadedImage = null; // HTMLImageElement für den Hide-Tab
 let capturedPhotoCanvas = null; // Canvas mit aufgenommenem Kamerafoto
 let selectedGifCanvas = null; // Canvas mit ausgewähltem GIF-Frame
 let cameraStream = null;
-let currentSeed = Math.floor(Math.random() * 1_000_000);
 
 function drawImageToCanvas(canvas, img) {
   canvas.width = img.naturalWidth || img.width;
@@ -124,13 +118,6 @@ btnCameraRetake.addEventListener("click", () => {
   startCamera();
 });
 
-genStyleEl.addEventListener("change", refreshPreview);
-genColor1El.addEventListener("input", refreshPreview);
-genColor2El.addEventListener("input", refreshPreview);
-document.getElementById("btn-reroll").addEventListener("click", () => {
-  currentSeed = Math.floor(Math.random() * 1_000_000);
-  refreshPreview();
-});
 messageEl.addEventListener("input", refreshPreview);
 
 function loadImageFromFile(file) {
@@ -154,172 +141,35 @@ function requiredPixelsForMessage(message) {
   return Math.ceil(requiredBits / 3);
 }
 
-/** Zeichnet bei Bildquelle "generieren" die aktuelle Vorschau neu und aktualisiert die Kapazitätsanzeige. */
+/** Aktualisiert die Vorschau/Kapazitätsanzeige für die aktuell gewählte Bildquelle. */
 function refreshPreview() {
   const source = document.querySelector('input[name="source"]:checked').value;
   const message = messageEl.value;
   const requiredPixels = requiredPixelsForMessage(message);
 
-  if (source === "upload" || source === "camera" || source === "gif") {
-    const hasImage =
-      source === "upload" ? !!uploadedImage : source === "camera" ? !!capturedPhotoCanvas : !!selectedGifCanvas;
-    if (!hasImage) {
-      const messages = {
-        upload: "Bitte ein Bild hochladen.",
-        camera: "Bitte zuerst ein Foto aufnehmen.",
-        gif: "Bitte zuerst ein GIF auswählen.",
-      };
-      capacityInfoEl.textContent = messages[source];
-      capacityInfoEl.className = "capacity-info";
-      return;
-    }
-    const capacityPixels = previewCanvasHide.width * previewCanvasHide.height;
-    if (message.length === 0) {
-      capacityInfoEl.textContent = `Bildkapazität: ${capacityPixels.toLocaleString("de-DE")} Pixel.`;
-      capacityInfoEl.className = "capacity-info";
-    } else if (requiredPixels <= capacityPixels) {
-      capacityInfoEl.textContent = `Passt: benötigt ~${requiredPixels.toLocaleString("de-DE")} von ${capacityPixels.toLocaleString("de-DE")} Pixeln.`;
-      capacityInfoEl.className = "capacity-info ok";
-    } else {
-      capacityInfoEl.textContent = `Zu groß: benötigt ~${requiredPixels.toLocaleString("de-DE")} Pixel, Bild hat nur ${capacityPixels.toLocaleString("de-DE")}.`;
-      capacityInfoEl.className = "capacity-info bad";
-    }
+  const hasImage =
+    source === "upload" ? !!uploadedImage : source === "camera" ? !!capturedPhotoCanvas : !!selectedGifCanvas;
+  if (!hasImage) {
+    const messages = {
+      upload: "Bitte ein Bild hochladen.",
+      camera: "Bitte zuerst ein Foto aufnehmen.",
+      gif: "Bitte zuerst ein GIF auswählen.",
+    };
+    capacityInfoEl.textContent = messages[source];
+    capacityInfoEl.className = "capacity-info";
     return;
   }
-
-  const side = Math.max(64, Math.ceil(Math.sqrt(requiredPixels * 1.15)));
-  const style = genStyleEl.value;
-  const color1 = hexToRgb(genColor1El.value);
-  const color2 = hexToRgb(genColor2El.value);
-  const art = generateArtCanvas(side, side, style, currentSeed, color1, color2);
-
-  previewCanvasHide.width = side;
-  previewCanvasHide.height = side;
-  previewCanvasHide.getContext("2d").drawImage(art, 0, 0);
-
-  capacityInfoEl.textContent = `Generiertes Bild: ${side}x${side} Pixel – genug Platz für deine Nachricht.`;
-  capacityInfoEl.className = "capacity-info ok";
-}
-
-function hexToRgb(hex) {
-  const clean = hex.replace("#", "");
-  return {
-    r: parseInt(clean.substring(0, 2), 16),
-    g: parseInt(clean.substring(2, 4), 16),
-    b: parseInt(clean.substring(4, 6), 16),
-  };
-}
-
-function lerpColor(c1, c2, t) {
-  return {
-    r: c1.r + (c2.r - c1.r) * t,
-    g: c1.g + (c2.g - c1.g) * t,
-    b: c1.b + (c2.b - c1.b) * t,
-  };
-}
-
-/** Deterministischer, seed-basierter Zufallsgenerator (mulberry32). */
-function makeRng(seed) {
-  let a = seed >>> 0;
-  return function () {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function generateArtCanvas(width, height, style, seed, color1, color2) {
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d");
-  const imgData = ctx.createImageData(width, height);
-  const data = imgData.data;
-  const rng = makeRng(seed);
-  const seedF = (seed % 1000) / 100;
-
-  // Für "stars": vorab Sternpositionen erzeugen
-  let stars = [];
-  if (style === "stars") {
-    const starCount = Math.max(15, Math.floor((width * height) / 350));
-    for (let i = 0; i < starCount; i++) {
-      stars.push({
-        x: rng() * width,
-        y: rng() * height,
-        r: rng() * 1.2 + 0.4,
-        brightness: rng() * 0.6 + 0.4,
-      });
-    }
+  const capacityPixels = previewCanvasHide.width * previewCanvasHide.height;
+  if (message.length === 0) {
+    capacityInfoEl.textContent = `Bildkapazität: ${capacityPixels.toLocaleString("de-DE")} Pixel.`;
+    capacityInfoEl.className = "capacity-info";
+  } else if (requiredPixels <= capacityPixels) {
+    capacityInfoEl.textContent = `Passt: benötigt ~${requiredPixels.toLocaleString("de-DE")} von ${capacityPixels.toLocaleString("de-DE")} Pixeln.`;
+    capacityInfoEl.className = "capacity-info ok";
+  } else {
+    capacityInfoEl.textContent = `Zu groß: benötigt ~${requiredPixels.toLocaleString("de-DE")} Pixel, Bild hat nur ${capacityPixels.toLocaleString("de-DE")}.`;
+    capacityInfoEl.className = "capacity-info bad";
   }
-
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const idx = (y * width + x) * 4;
-      let color;
-
-      if (style === "plasma") {
-        const v =
-          Math.sin(x * 0.04 + seedF) +
-          Math.sin(y * 0.05 + seedF * 1.3) +
-          Math.sin((x + y) * 0.03 + seedF * 0.7) +
-          Math.sin(Math.sqrt(x * x + y * y) * 0.04);
-        const t = Math.sin(v) * 0.5 + 0.5;
-        color = lerpColor(color1, color2, t);
-      } else if (style === "circles") {
-        const cx = width / 2, cy = height / 2;
-        const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
-        const t = Math.sin(dist * 0.15 + seedF) * 0.5 + 0.5;
-        color = lerpColor(color1, color2, t);
-      } else if (style === "waves") {
-        const t = Math.sin(x * 0.08 + Math.sin(y * 0.05 + seedF) * 3 + seedF) * 0.5 + 0.5;
-        color = lerpColor(color1, color2, t);
-      } else if (style === "grid") {
-        const cell = Math.max(8, Math.floor(width / 16));
-        const cellX = Math.floor(x / cell), cellY = Math.floor(y / cell);
-        const checker = (cellX + cellY) % 2;
-        const gradT = x / width;
-        const base = lerpColor(color1, color2, gradT);
-        color = checker === 0 ? base : { r: base.r * 0.6, g: base.g * 0.6, b: base.b * 0.6 };
-      } else if (style === "gradient") {
-        const t = (x / width + y / height) / 2;
-        color = lerpColor(color1, color2, t);
-      } else if (style === "stars") {
-        let brightness = 0;
-        for (const s of stars) {
-          const dx = x - s.x, dy = y - s.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const glowRadius = s.r * 2.5;
-          const falloff = Math.max(0, 1 - dist / glowRadius);
-          brightness = Math.max(brightness, falloff * falloff * s.brightness);
-        }
-        const bg = lerpColor(
-          { r: color2.r * 0.15, g: color2.g * 0.15, b: color2.b * 0.15 },
-          { r: color1.r * 0.15, g: color1.g * 0.15, b: color1.b * 0.15 },
-          y / height
-        );
-        color = lerpColor(bg, { r: 255, g: 255, b: 255 }, brightness);
-      } else {
-        // noise: leicht eingefärbtes Rauschen zwischen color1 und color2
-        const t = rng();
-        const base = lerpColor(color1, color2, t);
-        const jitter = (rng() - 0.5) * 60;
-        color = { r: base.r + jitter, g: base.g + jitter, b: base.b + jitter };
-      }
-
-      data[idx] = clampByte(color.r);
-      data[idx + 1] = clampByte(color.g);
-      data[idx + 2] = clampByte(color.b);
-      data[idx + 3] = 255;
-    }
-  }
-  ctx.putImageData(imgData, 0, 0);
-  return canvas;
-}
-
-function clampByte(v) {
-  return Math.max(0, Math.min(255, Math.round(v)));
 }
 
 const hideErrorEl = document.getElementById("hide-error");
@@ -355,12 +205,6 @@ document.getElementById("btn-hide").addEventListener("click", async () => {
       workCanvas.width = selectedGifCanvas.width;
       workCanvas.height = selectedGifCanvas.height;
       workCanvas.getContext("2d").drawImage(selectedGifCanvas, 0, 0);
-    } else {
-      refreshPreview(); // sicherstellen, dass die Vorschau zur aktuellen Nachricht passt
-      workCanvas = document.createElement("canvas");
-      workCanvas.width = previewCanvasHide.width;
-      workCanvas.height = previewCanvasHide.height;
-      workCanvas.getContext("2d").drawImage(previewCanvasHide, 0, 0);
     }
 
     const ctx = workCanvas.getContext("2d");

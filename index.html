@@ -72,10 +72,6 @@
             Bild hochladen
           </label>
           <label class="radio-pill">
-            <input type="radio" name="source" value="generate" />
-            Bild generieren
-          </label>
-          <label class="radio-pill">
             <input type="radio" name="source" value="camera" />
             Foto aufnehmen
           </label>
@@ -107,31 +103,6 @@
           <button type="button" id="btn-camera-retake" class="btn-secondary hidden">Neu aufnehmen</button>
         </div>
         <p id="camera-error" class="error hidden"></p>
-      </div>
-
-      <div id="generate-controls" class="source-controls hidden">
-        <label for="gen-style">Stil</label>
-        <select id="gen-style">
-          <option value="plasma">Plasma-Wellen</option>
-          <option value="noise">Farbrauschen</option>
-          <option value="circles">Kreise</option>
-          <option value="waves">Wellenlinien</option>
-          <option value="stars">Sternenhimmel</option>
-          <option value="grid">Gitter</option>
-          <option value="gradient">Farbverlauf</option>
-        </select>
-
-        <div class="color-row">
-          <label class="color-field">
-            Farbe 1
-            <input type="color" id="gen-color1" value="#7c5cff" />
-          </label>
-          <label class="color-field">
-            Farbe 2
-            <input type="color" id="gen-color2" value="#22d3aa" />
-          </label>
-          <button type="button" id="btn-reroll" class="btn-secondary btn-reroll" title="Neue Variante würfeln">🎲 Neu würfeln</button>
-        </div>
       </div>
 
       <div class="preview-row">

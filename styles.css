@@ -157,38 +157,6 @@ input[type="file"] {
 
 .source-controls.hidden { display: none; }
 
-.color-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  margin-top: 4px;
-}
-
-.color-field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 0.8rem;
-}
-
-.color-field input[type="color"] {
-  width: 44px;
-  height: 32px;
-  padding: 2px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: transparent;
-  cursor: pointer;
-}
-
-.btn-reroll {
-  margin-left: auto;
-  padding: 8px 12px;
-  font-size: 0.85rem;
-  cursor: pointer;
-  background: transparent;
-}
-
 #camera-video {
   width: 100%;
   max-height: 320px;
