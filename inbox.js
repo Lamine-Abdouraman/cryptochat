@@ -90,7 +90,10 @@ function renderInboxMessage(id, data) {
   const when = data.createdAt && data.createdAt.toDate ? data.createdAt.toDate() : new Date();
 
   item.innerHTML = `
-    <img src="${data.imageData}" alt="Verschlüsseltes Bild" class="inbox-thumb" />
+    <div class="inbox-thumb-wrap">
+      <img src="${data.imageData}" alt="Verschlüsseltes Bild" class="inbox-thumb" />
+      <canvas class="inbox-decrypt-overlay" width="90" height="90"></canvas>
+    </div>
     <div class="inbox-meta">
       <p class="inbox-from">
         ${avatarHtml(data.fromAvatar, data.fromUsername, "avatar-sm")} @${escapeHtml(data.fromUsername)}
@@ -140,8 +143,14 @@ function renderInboxMessage(id, data) {
   item.querySelector(".inbox-decrypt").addEventListener("click", async () => {
     const errEl = item.querySelector(".inbox-error");
     const outEl = item.querySelector(".inbox-plaintext");
+    const overlay = item.querySelector(".inbox-decrypt-overlay");
     errEl.classList.add("hidden");
     const password = item.querySelector(".inbox-password").value;
+
+    overlay.classList.add("active");
+    const stopAnim = startDecryptGlitch(overlay);
+    const minDuration = new Promise((resolve) => setTimeout(resolve, 650));
+
     try {
       const img = item.querySelector(".inbox-thumb");
       const canvas = document.createElement("canvas");
@@ -150,12 +159,16 @@ function renderInboxMessage(id, data) {
       canvas.getContext("2d").drawImage(img, 0, 0);
       const imageData = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height);
       const payload = extractPayload(imageData);
-      const message = await decryptPayload(password, payload);
+      const [message] = await Promise.all([decryptPayload(password, payload), minDuration]);
       outEl.textContent = message;
       outEl.classList.remove("hidden");
     } catch (err) {
+      await minDuration;
       errEl.textContent = "⚠️ Entschlüsselung fehlgeschlagen. Falsches Passwort?";
       errEl.classList.remove("hidden");
+    } finally {
+      stopAnim();
+      overlay.classList.remove("active");
     }
   });
 
@@ -164,6 +177,45 @@ function renderInboxMessage(id, data) {
   });
 
   inboxListEl.appendChild(item);
+}
+
+/** Zeigt während des Entschlüsselns aufblinkende alphanumerische Zeichen über
+ * dem Bild an. Gibt eine Funktion zurück, die die Animation wieder stoppt. */
+function startDecryptGlitch(canvas) {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width;
+  const h = canvas.height;
+  const cols = 5;
+  const rows = 5;
+  const cellW = w / cols;
+  const cellH = h / rows;
+
+  const tick = () => {
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = "rgba(10, 12, 24, 0.55)";
+    ctx.fillRect(0, 0, w, h);
+    ctx.font = `${Math.floor(cellH * 0.7)}px monospace`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (Math.random() < 0.5) continue;
+        ctx.globalAlpha = 0.4 + Math.random() * 0.6;
+        ctx.fillStyle = Math.random() < 0.2 ? "#7c5cff" : "#22d3aa";
+        const ch = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(ch, c * cellW + cellW / 2, r * cellH + cellH / 2);
+      }
+    }
+    ctx.globalAlpha = 1;
+  };
+
+  tick();
+  const intervalId = setInterval(tick, 70);
+  return () => {
+    clearInterval(intervalId);
+    ctx.clearRect(0, 0, w, h);
+  };
 }
 
 function showInboxItemError(item, msg) {

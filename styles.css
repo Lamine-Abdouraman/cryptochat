@@ -412,6 +412,13 @@ canvas {
   background: #10142450;
 }
 
+.inbox-thumb-wrap {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+}
+
 .inbox-thumb {
   width: 72px;
   height: 72px;
@@ -420,6 +427,19 @@ canvas {
   border: 1px solid var(--border);
   flex-shrink: 0;
 }
+
+.inbox-decrypt-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.inbox-decrypt-overlay.active { opacity: 1; }
 
 .inbox-meta {
   flex: 1;
