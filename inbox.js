@@ -100,6 +100,7 @@ function renderInboxMessage(id, data) {
       <input type="password" placeholder="Passwort" class="inbox-password" />
       <div class="inbox-actions">
         <button type="button" class="btn-secondary inbox-decrypt">Entschlüsseln</button>
+        <button type="button" class="btn-link inbox-reply">↩️ Antworten</button>
         <button type="button" class="btn-link inbox-delete">Löschen</button>
       </div>
       <pre class="inbox-plaintext hidden"></pre>
@@ -126,6 +127,14 @@ function renderInboxMessage(id, data) {
       addFriendBtn.disabled = false;
       showInboxItemError(item, result.msg);
     }
+  });
+
+  item.querySelector(".inbox-reply").addEventListener("click", () => {
+    document.querySelector('.tab-btn[data-tab="hide"]').click();
+    document.getElementById("send-to-username").value = data.fromUsername;
+    const messageInput = document.getElementById("message");
+    messageInput.value = "";
+    messageInput.focus();
   });
 
   item.querySelector(".inbox-decrypt").addEventListener("click", async () => {
