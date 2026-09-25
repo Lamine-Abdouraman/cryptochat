@@ -453,9 +453,11 @@ canvas {
   display: flex;
   gap: 10px;
   width: 100%;
+  justify-content: flex-start;
 }
 
-.inbox-actions button { cursor: pointer; font-size: 0.85rem; flex: 1; text-align: center; }
+.inbox-actions button { cursor: pointer; font-size: 0.85rem; text-align: center; }
+.inbox-actions .inbox-decrypt { flex: 1; max-width: 55%; }
 
 .inbox-delete {
   display: inline-flex;
