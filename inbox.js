@@ -101,7 +101,7 @@ function renderInboxMessage(id, data) {
       <div class="inbox-actions">
         <button type="button" class="btn-secondary inbox-decrypt">Entschlüsseln</button>
         <button type="button" class="btn-link inbox-reply">↩️ Antworten</button>
-        <button type="button" class="btn-link inbox-delete">Löschen</button>
+        <button type="button" class="btn-link inbox-delete" title="Löschen">🗑️</button>
       </div>
       <pre class="inbox-plaintext hidden"></pre>
       <p class="error hidden inbox-error"></p>
