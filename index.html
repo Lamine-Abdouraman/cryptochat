@@ -4,19 +4,27 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>CryptoChat – Nachrichten in Bildern verstecken</title>
-<meta name="description" content="Verschlüssele Nachrichten und verstecke sie unsichtbar in Bildern – komplett offline, direkt im Browser." />
+<meta name="description" content="Verschlüssele eine Nachricht, verstecke sie unsichtbar in einem Bild und schicke sie an einen anderen CryptoChat-Nutzer." />
 <meta name="theme-color" content="#0f1220" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icons/icon-192.png" />
 <link rel="apple-touch-icon" href="icons/icon-512.png" />
 <link rel="stylesheet" href="styles.css" />
+<script>
+  (function () {
+    try {
+      var theme = localStorage.getItem("cryptochat-theme");
+      if (theme === "light") document.documentElement.setAttribute("data-theme", "light");
+    } catch (e) {}
+  })();
+</script>
 </head>
 <body>
 <div class="app" id="app-root">
   <header class="app-header">
+    <button type="button" id="btn-theme-toggle" class="theme-toggle" title="Heller Hintergrund">☀️</button>
     <img src="icons/icon-192.png" alt="" class="app-logo" />
     <h1>CryptoChat</h1>
-    <p>Verschlüssele eine Nachricht, verstecke sie unsichtbar in einem Bild und schicke sie an einen anderen CryptoChat-Nutzer.</p>
   </header>
 
   <div id="account-box" class="card account-box">
@@ -177,6 +185,7 @@
   </footer>
 </div>
 
+<script src="theme.js"></script>
 <script src="crypto-stego.js"></script><script src="app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>

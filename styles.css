@@ -9,6 +9,22 @@
   --danger: #ff6b6b;
   --success: #22d3aa;
   --radius: 14px;
+  --panel-bg: #10142450;
+  --panel-bg-strong: #0a0c1850;
+}
+
+:root[data-theme="light"] {
+  --bg: #f2e8d5;
+  --bg-card: #fffcf5;
+  --accent: #6a4bdb;
+  --accent-2: #159c79;
+  --text: #2c2a22;
+  --text-dim: #6f6753;
+  --border: #ddceac;
+  --danger: #c8433a;
+  --success: #159c79;
+  --panel-bg: #ffffffb0;
+  --panel-bg-strong: #ffffffc0;
 }
 
 * { box-sizing: border-box; }
@@ -21,9 +37,10 @@
 body {
   margin: 0;
   font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: radial-gradient(circle at top, #1a1f3a 0%, var(--bg) 60%);
+  background: radial-gradient(circle at top, var(--bg-card) 0%, var(--bg) 60%);
   color: var(--text);
   min-height: 100vh;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .app {
@@ -59,6 +76,22 @@ body {
   color: var(--text-dim);
   margin: 0;
   font-size: 0.95rem;
+}
+
+.theme-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tabs {
@@ -110,7 +143,7 @@ label {
 
 textarea, input[type="password"], input[type="text"], select {
   width: 100%;
-  background: #10142450;
+  background: var(--panel-bg);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 10px 12px;
@@ -324,7 +357,7 @@ canvas {
 
 .account-details input {
   width: 100%;
-  background: #10142450;
+  background: var(--panel-bg);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 9px 11px;
@@ -357,7 +390,7 @@ canvas {
   padding: 14px;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: #10142450;
+  background: var(--panel-bg);
 }
 
 .send-to-user-box.hidden { display: none; }
@@ -369,7 +402,7 @@ canvas {
 
 .send-to-user-box input {
   width: 100%;
-  background: #10142450;
+  background: var(--panel-bg);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 9px 11px;
@@ -384,7 +417,7 @@ canvas {
 
 .send-to-user-row input {
   flex: 1;
-  background: #10142450;
+  background: var(--panel-bg);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 9px 11px;
@@ -409,7 +442,7 @@ canvas {
   padding: 12px;
   border: 1px solid var(--border);
   border-radius: 12px;
-  background: #10142450;
+  background: var(--panel-bg);
 }
 
 .inbox-thumb-wrap {
@@ -461,7 +494,7 @@ canvas {
 .inbox-date { margin: 0; font-size: 0.78rem; color: var(--text-dim); }
 
 .inbox-password {
-  background: #0a0c1850;
+  background: var(--panel-bg-strong);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 6px 8px;
@@ -488,7 +521,7 @@ canvas {
 .inbox-plaintext {
   white-space: pre-wrap;
   word-break: break-word;
-  background: #0a0c1850;
+  background: var(--panel-bg-strong);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px;
@@ -555,7 +588,7 @@ canvas {
 
 .gif-search-row input {
   flex: 1;
-  background: #10142450;
+  background: var(--panel-bg);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 9px 11px;
@@ -600,7 +633,7 @@ canvas {
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: #10142450;
+  background: var(--panel-bg);
 }
 
 .friend-username { flex: 1; font-weight: 600; }
@@ -622,7 +655,7 @@ canvas {
   padding: 5px 10px;
   border-radius: 999px;
   border: 1px solid var(--border);
-  background: #10142450;
+  background: var(--panel-bg);
   color: var(--text);
   font-size: 0.82rem;
   cursor: pointer;
