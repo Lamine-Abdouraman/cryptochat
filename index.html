@@ -27,6 +27,11 @@
     <h1>CryptoChat</h1>
   </header>
 
+  <div class="invite-friends-box">
+    <button type="button" id="btn-invite-friends" class="btn-primary">👋 Freunde einladen</button>
+    <p id="invite-friends-status" class="hint hidden"></p>
+  </div>
+
   <div id="account-box" class="card account-box">
     <div id="account-signed-out">
       <p class="account-hint">Optionales CryptoChat-Konto, um Nachrichten direkt an andere Nutzer zu schicken.</p>
@@ -170,11 +175,6 @@
         <p id="friends-error" class="error hidden"></p>
         <p id="friends-empty" class="hint hidden">Noch keine Freunde hinzugefügt.</p>
         <div id="friends-list" class="friends-list"></div>
-      </div>
-
-      <div class="invite-friends-box">
-        <button type="button" id="btn-invite-friends" class="btn-primary">👋 Freunde einladen</button>
-        <p id="invite-friends-status" class="hint hidden"></p>
       </div>
     </div>
   </section>
