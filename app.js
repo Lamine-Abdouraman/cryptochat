@@ -15,14 +15,12 @@ window.addEventListener("beforeunload", () => stopCamera());
 const uploadControls = document.getElementById("upload-controls");
 const cameraControls = document.getElementById("camera-controls");
 const gifControls = document.getElementById("gif-controls");
-const stockControls = document.getElementById("stock-controls");
 document.querySelectorAll('input[name="source"]').forEach((radio) => {
   radio.addEventListener("change", () => {
     const source = document.querySelector('input[name="source"]:checked').value;
     uploadControls.classList.toggle("hidden", source !== "upload");
     cameraControls.classList.toggle("hidden", source !== "camera");
     gifControls.classList.toggle("hidden", source !== "gif");
-    stockControls.classList.toggle("hidden", source !== "stock");
     if (source !== "camera") stopCamera();
     refreshPreview();
   });
@@ -35,7 +33,6 @@ const messageEl = document.getElementById("message");
 let uploadedImage = null; // Canvas mit hochgeladenem/skaliertem Bild
 let capturedPhotoCanvas = null; // Canvas mit aufgenommenem Kamerafoto
 let selectedGifCanvas = null; // Canvas mit ausgewähltem GIF-Frame
-let selectedStockCanvas = null; // Canvas mit ausgewähltem Foto (Pixabay)
 let cameraStream = null;
 
 // Bilder werden auf diese maximale Kantenlänge herunterskaliert – hält die
@@ -174,14 +171,12 @@ function refreshPreview() {
     upload: uploadedImage,
     camera: capturedPhotoCanvas,
     gif: selectedGifCanvas,
-    stock: selectedStockCanvas,
   };
   if (!sourceCanvases[source]) {
     const messages = {
       upload: "Bitte ein Bild hochladen.",
       camera: "Bitte zuerst ein Foto aufnehmen.",
       gif: "Bitte zuerst ein GIF auswählen.",
-      stock: "Bitte zuerst ein Foto auswählen.",
     };
     capacityInfoEl.textContent = messages[source];
     capacityInfoEl.className = "capacity-info";
@@ -226,11 +221,8 @@ document.getElementById("btn-hide").addEventListener("click", async () => {
       upload: "Bitte zuerst ein Bild hochladen.",
       camera: "Bitte zuerst ein Foto aufnehmen.",
       gif: "Bitte zuerst ein GIF auswählen.",
-      stock: "Bitte zuerst ein Foto auswählen.",
     };
-    const sourceCanvas = { upload: uploadedImage, camera: capturedPhotoCanvas, gif: selectedGifCanvas, stock: selectedStockCanvas }[
-      source
-    ];
+    const sourceCanvas = { upload: uploadedImage, camera: capturedPhotoCanvas, gif: selectedGifCanvas }[source];
     if (!sourceCanvas) return showHideError(sourceMessages[source]);
 
     workCanvas = document.createElement("canvas");
