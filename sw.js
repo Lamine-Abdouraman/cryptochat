@@ -1,8 +1,10 @@
-const CACHE_NAME = "cryptostego-v23";
+const CACHE_NAME = "cryptostego-v24";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css",
+  "./bg-dark.jpg",
+  "./bg-light.jpg",
   "./theme.js",
   "./app.js",
   "./crypto-stego.js",

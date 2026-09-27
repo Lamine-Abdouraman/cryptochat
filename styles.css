@@ -37,10 +37,17 @@
 body {
   margin: 0;
   font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: radial-gradient(circle at top, var(--bg-card) 0%, var(--bg) 60%);
+  background-image: linear-gradient(180deg, rgba(15, 18, 32, 0.72), rgba(15, 18, 32, 0.94)), url("bg-dark.jpg");
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
   color: var(--text);
   min-height: 100vh;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+:root[data-theme="light"] body {
+  background-image: linear-gradient(180deg, rgba(242, 232, 213, 0.5), rgba(242, 232, 213, 0.88)), url("bg-light.jpg");
 }
 
 .app {
