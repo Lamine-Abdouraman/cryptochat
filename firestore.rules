@@ -30,14 +30,18 @@ service cloud.firestore {
     }
 
     // Verschlüsselte Nachrichten. Erstellbar nur im eigenen Namen (from == eigene UID).
-    // Lesbar/löschbar nur von Absender oder Empfänger. Kein Update (unveränderlich).
+    // Lesbar/löschbar nur von Absender oder Empfänger. Update nur durch den
+    // Empfänger und ausschließlich um das "read"-Feld zu setzen (für den
+    // App-Icon-Badge mit der Anzahl ungelesener Nachrichten).
     match /messages/{messageId} {
       allow create: if request.auth != null
                     && request.resource.data.from == request.auth.uid;
       allow read, delete: if request.auth != null
                     && (request.auth.uid == resource.data.to
                         || request.auth.uid == resource.data.from);
-      allow update: if false;
+      allow update: if request.auth != null
+                    && request.auth.uid == resource.data.to
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
     }
   }
 }

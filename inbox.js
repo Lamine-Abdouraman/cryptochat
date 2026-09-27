@@ -62,6 +62,7 @@ document.addEventListener("cryptochat-auth-changed", (e) => {
   if (!e.detail) {
     inboxSignedOutEl.classList.remove("hidden");
     inboxEmptyEl.classList.add("hidden");
+    updateAppBadge(0);
     return;
   }
   inboxSignedOutEl.classList.add("hidden");
@@ -75,12 +76,36 @@ document.addEventListener("cryptochat-auth-changed", (e) => {
         inboxListEl.innerHTML = "";
         inboxEmptyEl.classList.toggle("hidden", !snapshot.empty);
         snapshot.forEach((doc) => renderInboxMessage(doc.id, doc.data()));
+        const unreadCount = snapshot.docs.filter((doc) => !doc.data().read).length;
+        updateAppBadge(unreadCount);
       },
       (err) => {
         inboxEmptyEl.classList.add("hidden");
         inboxListEl.innerHTML = `<p class="error">⚠️ ${err.message || err}</p>`;
       }
     );
+});
+
+/** Zeigt die Anzahl ungelesener Nachrichten als Zähler auf dem App-Icon an
+ * (nur wirksam, wenn die PWA installiert ist und der Browser die Badging API
+ * unterstützt – rein client-seitig, keine Push-Benachrichtigung). */
+function updateAppBadge(count) {
+  if (!("setAppBadge" in navigator)) return;
+  try {
+    if (count > 0) navigator.setAppBadge(count).catch(() => {});
+    else navigator.clearAppBadge().catch(() => {});
+  } catch (e) {}
+}
+
+/** Markiert alle ungelesenen Posteingang-Nachrichten als gelesen, sobald der
+ * Posteingang-Tab geöffnet wird (löscht danach den Badge-Zähler). */
+document.querySelector('.tab-btn[data-tab="inbox"]').addEventListener("click", async () => {
+  if (!currentUser) return;
+  const snapshot = await db.collection("messages").where("to", "==", currentUser.uid).where("read", "==", false).get();
+  if (snapshot.empty) return;
+  const batch = db.batch();
+  snapshot.forEach((doc) => batch.update(doc.ref, { read: true }));
+  await batch.commit();
 });
 
 function renderInboxMessage(id, data) {
