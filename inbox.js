@@ -97,20 +97,16 @@ function updateAppBadge(count) {
   } catch (e) {}
 }
 
-/** Markiert alle ungelesenen Posteingang-Nachrichten als gelesen, sobald der
- * Posteingang-Tab geöffnet wird (löscht danach den Badge-Zähler). */
-document.querySelector('.tab-btn[data-tab="inbox"]').addEventListener("click", async () => {
-  if (!currentUser) return;
-  const snapshot = await db.collection("messages").where("to", "==", currentUser.uid).where("read", "==", false).get();
-  if (snapshot.empty) return;
-  const batch = db.batch();
-  snapshot.forEach((doc) => batch.update(doc.ref, { read: true }));
-  await batch.commit();
-});
+/** Markiert eine einzelne Nachricht als gelesen (nach erfolgreichem
+ * Entschlüsseln) – aktualisiert dadurch auch den App-Icon-Badge. */
+function markMessageAsRead(id) {
+  db.collection("messages").doc(id).update({ read: true }).catch(() => {});
+}
 
 function renderInboxMessage(id, data) {
   const item = document.createElement("div");
-  item.className = "inbox-item";
+  const isUnread = !data.read;
+  item.className = "inbox-item" + (isUnread ? " inbox-item-unread" : "");
 
   const when = data.createdAt && data.createdAt.toDate ? data.createdAt.toDate() : new Date();
 
@@ -122,6 +118,7 @@ function renderInboxMessage(id, data) {
     <div class="inbox-meta">
       <p class="inbox-from">
         ${avatarHtml(data.fromAvatar, data.fromUsername, "avatar-sm")} @${escapeHtml(data.fromUsername)}
+        ${isUnread ? '<span class="inbox-unread-badge">🆕 Neu</span>' : ""}
         <button type="button" class="btn-link inbox-add-friend hidden">➕ Freund hinzufügen</button>
       </p>
       <p class="inbox-date">${when.toLocaleString("de-DE")}</p>
@@ -187,6 +184,7 @@ function renderInboxMessage(id, data) {
       const [message] = await Promise.all([decryptPayload(password, payload), minDuration]);
       outEl.textContent = message;
       outEl.classList.remove("hidden");
+      if (!data.read) markMessageAsRead(id);
     } catch (err) {
       await minDuration;
       errEl.textContent = "⚠️ Entschlüsselung fehlgeschlagen. Falsches Passwort?";
