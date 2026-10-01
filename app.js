@@ -249,12 +249,39 @@ document.getElementById("btn-hide").addEventListener("click", async () => {
     hideSuccessMsgEl.textContent = sendResult.msg;
     hideResultEl.classList.remove("hidden");
     document.getElementById("send-to-username").value = "";
+    playSendSound();
   } catch (err) {
     showHideError(err.message || String(err));
   } finally {
     btnHideEl.disabled = false;
   }
 });
+
+/** Kurzer, synthetischer "Whoosh"-Sende-Ton (kein Audio-File nötig, bleibt
+ * offline-fähig). Schlägt lautlos fehl, falls der Browser Autoplay blockiert
+ * oder Web Audio nicht unterstützt. */
+let sendAudioCtx = null;
+function playSendSound() {
+  try {
+    sendAudioCtx = sendAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (sendAudioCtx.state === "suspended") sendAudioCtx.resume();
+
+    const now = sendAudioCtx.currentTime;
+    const osc = sendAudioCtx.createOscillator();
+    const gain = sendAudioCtx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(600, now);
+    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.12);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.25, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+    osc.connect(gain).connect(sendAudioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.25);
+  } catch (e) {
+    // Ton ist rein kosmetisch – Versand selbst war bereits erfolgreich.
+  }
+}
 
 function blobToDataURL(blob) {
   return new Promise((resolve, reject) => {
