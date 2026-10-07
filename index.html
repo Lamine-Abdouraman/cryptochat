@@ -6,6 +6,7 @@
 <title>CryptoChat – Nachrichten in Bildern verstecken</title>
 <meta name="description" content="Verschlüssele eine Nachricht, verstecke sie unsichtbar in einem Bild und schicke sie an einen anderen CryptoChat-Nutzer." />
 <meta name="theme-color" content="#0f1220" />
+<meta name="color-scheme" content="dark light" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icons/icon-192.png" />
 <link rel="apple-touch-icon" href="icons/icon-512.png" />
@@ -22,27 +23,27 @@
 <body>
 <div class="app" id="app-root">
   <header class="app-header">
-    <button type="button" id="btn-theme-toggle" class="theme-toggle" title="Heller Hintergrund">☀️</button>
-    <img src="icons/icon-192.png" alt="" class="app-logo" />
-    <h1>CryptoChat</h1>
+    <div class="brand">
+      <img src="icons/icon-192.png" alt="" class="app-logo" />
+      <div class="brand-text">
+        <h1>CryptoChat</h1>
+        <p class="tagline">Geheimnachrichten im Bild</p>
+      </div>
+    </div>
+    <button type="button" id="btn-theme-toggle" class="theme-toggle" title="Heller Hintergrund" aria-label="Design wechseln"></button>
   </header>
-
-  <div class="invite-friends-box">
-    <button type="button" id="btn-invite-friends" class="btn-primary">👋 Freunde einladen</button>
-    <p id="invite-friends-status" class="hint hidden"></p>
-  </div>
 
   <div id="account-box" class="card account-box">
     <div id="account-signed-out">
-      <p class="account-hint">Optionales CryptoChat-Konto, um Nachrichten direkt an andere Nutzer zu schicken.</p>
-      <details class="account-details" open>
+      <p class="account-hint">Mit einem kostenlosen Konto schickst du Nachrichten direkt an andere Nutzer.</p>
+      <details class="account-details" name="auth" open>
         <summary>Anmelden</summary>
         <input type="email" id="login-email" placeholder="E-Mail" autocomplete="email" />
         <input type="password" id="login-password" placeholder="Passwort" autocomplete="current-password" />
         <button type="button" id="btn-login" class="btn-secondary">Anmelden</button>
         <button type="button" id="btn-forgot-password" class="btn-link">Passwort vergessen?</button>
       </details>
-      <details class="account-details">
+      <details class="account-details" name="auth">
         <summary>Registrieren</summary>
         <input type="text" id="signup-username" placeholder="Nutzername" autocomplete="username" />
         <input type="email" id="signup-email" placeholder="E-Mail" autocomplete="email" />
@@ -78,7 +79,7 @@
       <input type="password" id="password-hide" placeholder="Ein starkes Passwort" autocomplete="new-password" />
 
       <div id="send-to-user-box" class="send-to-user-box hidden">
-        <label for="send-to-username">📨 Senden an (Nutzername)</label>
+        <label for="send-to-username">Senden an</label>
         <div id="send-friend-chips" class="friend-chips hidden"></div>
         <input type="text" id="send-to-username" placeholder="Nutzername des Empfängers" autocomplete="off" />
       </div>
@@ -130,7 +131,7 @@
         <div id="capacity-info" class="capacity-info"></div>
       </div>
 
-      <button id="btn-hide" class="btn-primary">🔒📨 Verschlüsseln &amp; senden</button>
+      <button id="btn-hide" class="btn-primary btn-send">Verschlüsseln &amp; senden</button>
 
       <div id="hide-result" class="result hidden">
         <p class="success-msg" id="hide-success-msg">✅ Gesendet!</p>
@@ -162,6 +163,13 @@
         <p id="friends-error" class="error hidden"></p>
         <p id="friends-empty" class="hint hidden">Noch keine Freunde hinzugefügt.</p>
         <div id="friends-list" class="friends-list"></div>
+      </div>
+
+      <div class="invite-friends-box">
+        <p class="invite-title">Freunde einladen</p>
+        <p class="hint">Teile den Link, damit deine Freunde CryptoChat auch nutzen können.</p>
+        <button type="button" id="btn-invite-friends" class="btn-secondary">Einladung teilen</button>
+        <p id="invite-friends-status" class="hint hidden"></p>
       </div>
     </div>
   </section>
